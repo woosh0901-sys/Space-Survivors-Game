@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="388.0" prefWidth="362.0" style="-fx-background-color: #333333;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.ShopController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <top>
+      <VBox alignment="CENTER" prefHeight="150.0" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="SHOP" textFill="GOLD">
+               <font>
+                  <Font name="Arial" size="60.0" />
+               </font>
+            </Label>
+            <Label fx:id="goldLabel" text="Gold: 0" textFill="GOLD">
+               <font>
+                  <Font name="Arial" size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <VBox alignment="CENTER_LEFT" spacing="20.0" BorderPane.alignment="CENTER_LEFT">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label fx:id="hpLabel" text="HP Label" textFill="WHITE">
+                     <font><Font name="Arial" size="18.0" /></font>
+                  </Label>
+                  <Button fx:id="hpUpgradeButton" onAction="#handleHpUpgrade" text="Upgrade Button" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label fx:id="damageLabel" text="Damage Label" textFill="WHITE">
+                     <font><Font name="Arial" size="18.0" /></font>
+                  </Label>
+                  <Button fx:id="damageUpgradeButton" onAction="#handleDamageUpgrade" text="Upgrade Button" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label fx:id="attackSpeedLabel" text="Attack Speed Label" textFill="WHITE">
+                     <font><Font name="Arial" size="18.0" /></font>
+                  </Label>
+                  <Button fx:id="attackSpeedUpgradeButton" onAction="#handleAttackSpeedUpgrade" text="Upgrade Button" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <Button onAction="#handleBackButton" text="뒤로가기" BorderPane.alignment="CENTER">
+         <font>
+            <Font name="Arial" size="24.0" />
+         </font>
+      </Button>
+   </bottom>
+</BorderPane>
