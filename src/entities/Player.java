@@ -1,7 +1,7 @@
 package entities;
 
+import java.util.List; // List import 추가
 import java.util.Set;
-
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
@@ -13,20 +13,20 @@ public class Player {
     public double x, y;
     private Image image;
     private double displayWidth = 80, displayHeight = 80;
+    private double shootCooldown = 0;
     
-    // 게임 내에서만 사용되는 임시 스탯
+    // 게임 내 임시 스탯
     public double maxHp, currentHp;
     public int damage;
     public double attackSpeed;
     public double speed;
     private double goldMultiplier = 1.0;
-    public double maxSpeed = 1050; // 최대 이동 속도 한계
+    public double maxSpeed = 1050;
 
     public Player(double startX, double startY) {
         this.x = startX;
         this.y = startY;
         
-        // GameData의 영구 스탯으로 게임 내 임시 스탯을 초기화
         this.maxHp = GameData.playerMaxHp;
         this.currentHp = this.maxHp;
         this.damage = GameData.playerDamage;
@@ -40,6 +40,13 @@ public class Player {
         }
     }
     
+    public void shoot(List<Bullet> bullets) {
+        if (shootCooldown <= 0) {
+            bullets.add(new Bullet(this.x, this.y)); // player.x 대신 this.x 사용
+            shootCooldown = this.attackSpeed;        // player.attackSpeed 대신 this.attackSpeed 사용
+        }
+    }
+   
     // 레벨업 버프 적용 메소드들
     public void applyHpBuff(double percentage) { 
     	this.maxHp *= (1 + percentage); this.currentHp = this.maxHp; 
@@ -71,6 +78,11 @@ public class Player {
 
     
     public void update(Set<KeyCode> activeKeys, double deltaTime) {
+    	
+    	if (shootCooldown > 0) {
+            shootCooldown -= deltaTime;
+        }
+    	
     	double moveX = 0;
         double moveY = 0;
 

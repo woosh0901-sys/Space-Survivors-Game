@@ -1,5 +1,6 @@
 package entities; // 이 파일이 com.mygame.entities 패키지에 속해 있음을 선언합니다.
 
+import java.util.List;
 import javafx.scene.canvas.GraphicsContext; // 캔버스에 그래픽을 그리기 위한 GraphicsContext 클래스를 가져옵니다.
 import javafx.scene.image.Image; // 이미지를 다루기 위한 Image 클래스를 가져옵니다.
 import javafx.scene.paint.Color; // 색상을 다루기 위한 Color 클래스를 가져옵니다.
@@ -19,7 +20,10 @@ public class Enemy { // 적 객체를 정의하는 Enemy 클래스입니다.
     private double maxHealth; // 적의 최대 체력을 저장하는 변수입니다.
     private double width = 70; // 적 이미지의 너비를 설정합니다.
     private double height = 70; // 적 이미지의 높이를 설정합니다.
-
+    
+    private double enemyshootCooldown = 0;
+    public double enemyattackSpeed = 2.0;
+    
     public Enemy(double startX) { // Enemy 객체를 생성하는 생성자입니다. 시작 x좌표를 매개변수로 받습니다.
         this.x = startX; // x 좌표를 생성 시 받은 startX 값으로 초기화합니다.
         this.y = 0 - height; // y 좌표를 화면 바로 위에서 시작하도록 설정합니다.
@@ -27,6 +31,9 @@ public class Enemy { // 적 객체를 정의하는 Enemy 클래스입니다.
         // GameData의 값으로 체력 초기화 // 체력 초기화에 대한 설명 주석입니다.
         this.maxHealth = GameData.enemyBaseHealth; // GameData에 저장된 값으로 최대 체력을 설정합니다.
         this.health = this.maxHealth; // 현재 체력을 최대 체력과 동일하게 설정합니다.
+        this.speed = GameData.enemySpeed;
+        
+        this.enemyshootCooldown = Math.random() * enemyattackSpeed;
         
         try { // 예외가 발생할 수 있는 코드를 시도합니다.
             image = new Image(getClass().getResourceAsStream("/images/enemy.png")); //
@@ -42,11 +49,22 @@ public class Enemy { // 적 객체를 정의하는 Enemy 클래스입니다.
             this.isDestroyed = true; // 파괴 상태를 true로 변경합니다.
         }
     }
-
-    public void update(double deltaTime) { // 매 프레임마다 적의 상태를 갱신하는 메소드입니다.
+    
+    public void enemyshoot(List<EnemyBullet> enemyBullets) {
+        	enemyBullets.add(new EnemyBullet(this.x, this.y)); // player.x 대신 this.x 사용
+            this.enemyshootCooldown = this.enemyattackSpeed;        // player.attackSpeed 대신 this.attackSpeed 사용
+    }
+    
+    public void update(double deltaTime, List<EnemyBullet> enemyBullets) { // 매 프레임마다 적의 상태를 갱신하는 메소드입니다.
         y += speed * deltaTime; // 속도와 프레임 시간을 곱한 만큼 y좌표를 증가시켜 아래로 이동시킵니다.
         if (y > 1080) { // 만약 적이 화면 아래(y=650)를 넘어가면,
             isOffScreen = true; // 화면 밖으로 나갔다고 표시합니다.
+        }
+        
+        enemyshootCooldown -= deltaTime;
+        // 쿨타임이 다 되면 발사
+        if (enemyshootCooldown <= 0) {
+            enemyshoot(enemyBullets);
         }
     }
 
