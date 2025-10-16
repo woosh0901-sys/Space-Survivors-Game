@@ -16,8 +16,8 @@ import javafx.stage.Stage; // 애플리케이션의 최상위 창을 나타내�
 
 public class GameMain extends Application { // JavaFX 애플리케이션의 진입점인 GameMain 클래스를 선언하고 Application 클래스를 상속받습니다.
 
-    public static final int WIDTH = 800; // 게임 창의 너비를 800으로 설정하는 상수입니다.
-    public static final int HEIGHT = 600; // 게임 창의 높이를 600으로 설정하는 상수입니다.
+    public static final int WIDTH = 1920;
+    public static final int HEIGHT = 1080;
 
     private GameStateManager gsm; // 게임 상태 관리자(GameStateManager) 객체를 저장할 변수입니다.
     private static Set<KeyCode> activeKeys = new HashSet<>(); // 현재 눌려있는 키들을 저장하는 Set입니다.

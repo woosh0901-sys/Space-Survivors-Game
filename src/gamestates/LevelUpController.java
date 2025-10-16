@@ -29,7 +29,7 @@ public class LevelUpController {
         allUpgrades.add(new UpgradeOption("공격 속도 +5%", () -> playingState.getPlayer().applyAttackSpeedBuff(0.05)));
         allUpgrades.add(new UpgradeOption("획득골드 +10%", () -> playingState.getPlayer().applyGoldBuff(0.10)));
         if (playingState.getPlayer().getSpeed() < playingState.getPlayer().getMaxSpeed()) {
-             allUpgrades.add(new UpgradeOption("이동 속도 +30", () -> playingState.getPlayer().applySpeedBuff(30)));
+             allUpgrades.add(new UpgradeOption("이동 속도 +50", () -> playingState.getPlayer().applySpeedBuff(50)));
         }
         
         Collections.shuffle(allUpgrades);

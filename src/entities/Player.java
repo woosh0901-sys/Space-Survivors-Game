@@ -6,12 +6,13 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import main.GameData;
+import main.GameMain;
 
 public class Player {
 
     public double x, y;
     private Image image;
-    private double displayWidth = 64, displayHeight = 64;
+    private double displayWidth = 80, displayHeight = 80;
     
     // 게임 내에서만 사용되는 임시 스탯
     public double maxHp, currentHp;
@@ -19,7 +20,7 @@ public class Player {
     public double attackSpeed;
     public double speed;
     private double goldMultiplier = 1.0;
-    public double maxSpeed = 450; // 최대 이동 속도 한계
+    public double maxSpeed = 1050; // 최대 이동 속도 한계
 
     public Player(double startX, double startY) {
         this.x = startX;
@@ -70,10 +71,39 @@ public class Player {
 
     
     public void update(Set<KeyCode> activeKeys, double deltaTime) {
-        if (activeKeys.contains(KeyCode.A)) x -= speed * deltaTime;
-        if (activeKeys.contains(KeyCode.D)) x += speed * deltaTime;
-        if (activeKeys.contains(KeyCode.W)) y -= speed * deltaTime;
-        if (activeKeys.contains(KeyCode.S)) y += speed * deltaTime;
+    	double moveX = 0;
+        double moveY = 0;
+
+        // 2. 키 입력에 따라 방향 설정
+        if (activeKeys.contains(KeyCode.LEFT) || activeKeys.contains(KeyCode.A)) {
+            moveX -= 1;
+        }
+        if (activeKeys.contains(KeyCode.RIGHT) || activeKeys.contains(KeyCode.D)) {
+            moveX += 1;
+        }
+        if (activeKeys.contains(KeyCode.UP) || activeKeys.contains(KeyCode.W)) {
+            moveY -= 1;
+        }
+        if (activeKeys.contains(KeyCode.DOWN) || activeKeys.contains(KeyCode.S)) {
+            moveY += 1;
+        }
+
+        // 3. 벡터 정규화: 대각선 이동 시 속도가 빨라지는 것을 방지
+        if (moveX != 0 && moveY != 0) {
+            double magnitude = Math.sqrt(moveX * moveX + moveY * moveY);
+            moveX /= magnitude;
+            moveY /= magnitude;
+        }
+
+        // 4. 최종 위치 계산
+        x += moveX * speed * deltaTime;
+        y += moveY * speed * deltaTime;
+        
+        // --- 화면 밖으로 나가지 않도록 위치 보정 ---
+        if (x < displayWidth / 2) x = displayWidth / 2;
+        if (x > GameMain.WIDTH - displayWidth / 2) x = GameMain.WIDTH - displayWidth / 2;
+        if (y < displayHeight / 2) y = displayHeight / 2;
+        if (y > GameMain.HEIGHT - displayHeight / 2) y = GameMain.HEIGHT - displayHeight / 2;
     }
 
     public void render(GraphicsContext gc) {

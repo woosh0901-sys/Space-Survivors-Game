@@ -6,8 +6,8 @@ import javafx.scene.paint.Color; // 색상을 다루기 위한 Color 클래스�
 public class Bullet { // 총알 객체를 정의하는 Bullet 클래스입니다.
 
     public double x, y; // 총알의 현재 x, y 좌표를 저장하는 변수입니다.
-    private double speed = 600; // 총알의 이동 속도를 설정합니다 (플레이어보다 빠르게).
-    private double size = 10; // 총알의 지름(크기)을 설정합니다.
+    private double speed = 1080; // 총알의 이동 속도를 설정합니다 (플레이어보다 빠르게).
+    private double size = 40; // 총알의 지름(크기)을 설정합니다.
     
     // 총알이 화면 밖으로 나갔는지 확인하기 위한 변수 // 상태 변수에 대한 설명 주석입니다.
     public boolean isOffScreen = false; // 총알이 화면 밖으로 나갔는지 여부를 저장하는 변수입니다.

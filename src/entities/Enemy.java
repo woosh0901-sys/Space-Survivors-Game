@@ -17,8 +17,8 @@ public class Enemy { // 적 객체를 정의하는 Enemy 클래스입니다.
     // ★★★ 체력 변수와 크기 변수 추가 ★★★ // 추가된 변수들에 대한 설명 주석입니다.
     private double health; // 적의 현재 체력을 저장하는 변수입니다.
     private double maxHealth; // 적의 최대 체력을 저장하는 변수입니다.
-    private double width = 50; // 적 이미지의 너비를 설정합니다.
-    private double height = 50; // 적 이미지의 높이를 설정합니다.
+    private double width = 70; // 적 이미지의 너비를 설정합니다.
+    private double height = 70; // 적 이미지의 높이를 설정합니다.
 
     public Enemy(double startX) { // Enemy 객체를 생성하는 생성자입니다. 시작 x좌표를 매개변수로 받습니다.
         this.x = startX; // x 좌표를 생성 시 받은 startX 값으로 초기화합니다.
@@ -45,7 +45,7 @@ public class Enemy { // 적 객체를 정의하는 Enemy 클래스입니다.
 
     public void update(double deltaTime) { // 매 프레임마다 적의 상태를 갱신하는 메소드입니다.
         y += speed * deltaTime; // 속도와 프레임 시간을 곱한 만큼 y좌표를 증가시켜 아래로 이동시킵니다.
-        if (y > 650) { // 만약 적이 화면 아래(y=650)를 넘어가면,
+        if (y > 1080) { // 만약 적이 화면 아래(y=650)를 넘어가면,
             isOffScreen = true; // 화면 밖으로 나갔다고 표시합니다.
         }
     }

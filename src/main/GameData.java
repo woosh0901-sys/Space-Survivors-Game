@@ -14,7 +14,7 @@ public class GameData {
     public static int playerMaxHp = 100;
     public static int playerDamage = 50;
     public static double playerAttackSpeed = 0.5;
-    public static double playerMoveSpeed = 300;
+    public static double playerMoveSpeed = 450;
 
     // 업그레이드 레벨 및 비용 (영구 저장됨)
     public static int hpLevel = 1;
@@ -30,6 +30,7 @@ public class GameData {
     public static double enemyBaseXP = 25;
     public static double enemyBaseGold = 10;
     public static double enemyDamage = 10;
+    public static double enemySpeed = 150;
     
     public static void save() {
         try (FileWriter writer = new FileWriter(SAVE_FILE)) {
@@ -81,7 +82,7 @@ public class GameData {
         playerMaxHp = 100;
         playerDamage = 50;
         playerAttackSpeed = 0.5;
-        playerMoveSpeed = 300;
+        playerMoveSpeed = 600;
         hpLevel = 1;
         damageLevel = 1;
         attackSpeedLevel = 1;

@@ -3,27 +3,30 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox alignment="CENTER" prefWidth="392.0" spacing="20.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.GameOverController">
+<VBox alignment="CENTER" spacing="40.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.GameOverController">
    <children>
-      <Text fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" text="GAME OVER">
+      <Text fill="RED" text="GAME OVER">
          <font>
-            <Font name="Arial" size="60.0" />
+            <Font name="Arial Bold" size="90.0" />
          </font>
       </Text>
-      <HBox alignment="CENTER" spacing="20.0">
+      <HBox alignment="CENTER" spacing="30.0">
          <children>
-            <Button onAction="#handleRestartButton" style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 10 20;" text="RESTART">
+            <Button onAction="#handleRestartButton" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="RESTART">
                <font>
-                  <Font name="Arial" size="24.0" />
+                  <Font name="Arial Bold" size="32.0" />
                </font>
+               <padding><Insets bottom="15.0" left="30.0" right="30.0" top="15.0" /></padding>
             </Button>
-            <Button onAction="#handleMenuButton" style="-fx-background-color: #555555; -fx-text-fill: white; -fx-padding: 10 20;" text="MAIN MENU">
+            <Button onAction="#handleMenuButton" style="-fx-background-color: #555555; -fx-text-fill: white;" text="MAIN MENU">
                <font>
-                  <Font name="Arial" size="24.0" />
+                  <Font name="Arial Bold" size="32.0" />
                </font>
+               <padding><Insets bottom="15.0" left="30.0" right="30.0" top="15.0" /></padding>
             </Button>
          </children>
       </HBox>
