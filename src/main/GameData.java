@@ -9,6 +9,9 @@ public class GameData {
 
     private static final String SAVE_FILE = "save_data.txt";
 
+    // ★ 캐릭터 선택 변수
+    public static String selectedCharacter = "DEFAULT"; // 기본값
+
     // 재화 및 스탯 (영구 저장됨)
     public static int gold = 0;
     public static int playerMaxHp = 100;
@@ -34,11 +37,12 @@ public class GameData {
     
     public static void save() {
         try (FileWriter writer = new FileWriter(SAVE_FILE)) {
+            writer.write(selectedCharacter + "\n"); // ★ 캐릭터 저장
             writer.write(gold + "\n");
             writer.write(playerMaxHp + "\n");
             writer.write(playerDamage + "\n");
             writer.write(playerAttackSpeed + "\n");
-            writer.write(playerMoveSpeed + "\n"); // 이동속도 저장
+            writer.write(playerMoveSpeed + "\n");
             writer.write(hpLevel + "\n");
             writer.write(damageLevel + "\n");
             writer.write(attackSpeedLevel + "\n");
@@ -59,25 +63,28 @@ public class GameData {
         }
 
         try (Scanner scanner = new Scanner(file)) {
+            selectedCharacter = scanner.nextLine(); // ★ 캐릭터 불러오기
             gold = Integer.parseInt(scanner.nextLine());
             playerMaxHp = Integer.parseInt(scanner.nextLine());
             playerDamage = Integer.parseInt(scanner.nextLine());
             playerAttackSpeed = Double.parseDouble(scanner.nextLine());
-            playerMoveSpeed = Double.parseDouble(scanner.nextLine()); // 이동속도 불러오기
+            playerMoveSpeed = Double.parseDouble(scanner.nextLine());
             hpLevel = Integer.parseInt(scanner.nextLine());
             damageLevel = Integer.parseInt(scanner.nextLine());
             attackSpeedLevel = Integer.parseInt(scanner.nextLine());
             hpUpgradeCost = Double.parseDouble(scanner.nextLine());
             damageUpgradeCost = Double.parseDouble(scanner.nextLine());
             attackSpeedUpgradeCost = Double.parseDouble(scanner.nextLine());
-            System.out.println("게임 데이터를 불러왔습니다.");
+            System.out.println("게임 데이터를 불러왔습니다. (캐릭터: " + selectedCharacter + ")");
         } catch (Exception e) {
             System.err.println("데이터 불러오기 오류. 파일을 삭제합니다.");
             file.delete();
+            reset(); // 오류 시 초기화
         }
     }
     
     public static void reset() {
+        selectedCharacter = "DEFAULT"; // ★ 리셋 시 기본값
         gold = 0;
         playerMaxHp = 100;
         playerDamage = 50;

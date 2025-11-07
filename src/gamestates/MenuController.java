@@ -8,7 +8,6 @@ public class MenuController {
 
     private GameStateManager gsm;
 
-    // GameStateManager를 외부(MenuState)에서 받아오기 위한 메소드
     public void init(GameStateManager gsm) {
         this.gsm = gsm;
     }
@@ -17,7 +16,9 @@ public class MenuController {
     @FXML
     void handlePlayButton(ActionEvent event) {
         if (gsm != null) {
-            gsm.setState(new PlayingState(gsm));
+            // ★ 수정된 부분 ★
+            // PlayingState로 바로 가지 않고, 캐릭터 선택 화면(State)을 띄웁니다.
+            gsm.setState(new CharacterSelectState(gsm));
         }
     }
     

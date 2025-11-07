@@ -1,8 +1,14 @@
 package gamestates;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-import entities.*;
+import entities.Bullet; 
+import entities.Enemy;
+import entities.PlayableCharacter; // ★ Player 대신 PlayableCharacter
+import entities.Player;             // (DEFAULT 로드용)
+import entities.Player2;         // (TANK 로드용)
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
@@ -16,10 +22,12 @@ import main.GameMain;
 public class PlayingState extends GameState {
     
     private GraphicsContext gc;
-    private Player player;
-    private List<Bullet> bullets;
+    // --- ★ 플레이어 타입 변경 ---
+    private PlayableCharacter player; 
+    
+    private List<Bullet> playerBullets; 
     private List<Enemy> enemies;
-    private List<EnemyBullet> enemyBullets;
+    private List<Bullet> enemyBullets; 
     
     private int level;
     private double currentXp, requiredXp;
@@ -29,8 +37,6 @@ public class PlayingState extends GameState {
     private Random random;
     
     private double elapsedTime = 0;
-    
-    public double playerdamage = 10;
     private int difficultyTier = 0;
     private GameUIController uiController;
     
@@ -60,9 +66,23 @@ public class PlayingState extends GameState {
     }
 
     public void init() {
-    	player = new Player(GameMain.WIDTH / 2, GameMain.HEIGHT - 50); 
-        bullets = new ArrayList<>();
+    	// --- ★ 캐릭터 로딩 부분 수정 ---
+        double startX = GameMain.WIDTH / 2;
+        double startY = GameMain.HEIGHT - 50;
+        
+        if (GameData.selectedCharacter.equals("TANK")) {
+            player = new Player2(startX, startY);
+            System.out.println("탱크 캐릭터로 시작합니다.");
+        } else {
+            // 기본값은 'DEFAULT' 캐릭터 (Player.java)
+            player = new Player(startX, startY);
+            System.out.println("기본 캐릭터로 시작합니다.");
+        }
+        
+        playerBullets = new ArrayList<>();
         enemies = new ArrayList<>();
+        enemyBullets = new ArrayList<>(); 
+        
         level = 1;
         currentXp = 0;
         requiredXp = 150;
@@ -72,45 +92,71 @@ public class PlayingState extends GameState {
         elapsedTime = 0;
         difficultyTier = 0;
         
+        // 게임 시작 시 스탯 초기화
         GameData.enemyBaseHealth = 50;
         GameData.enemyBaseXP = 25;
         GameData.enemyBaseGold = 10;
         GameData.enemyDamage = 10;
         GameData.enemySpeed = 150;
-        
-        enemies = new ArrayList<>();
-        enemyBullets = new ArrayList<>();
     }
     
+    /**
+     * GameMain에서 스페이스바를 눌렀을 때 호출됩니다.
+     * (공격 방식이 List<Bullet>로 변경됨에 따라 수정)
+     */
     public void shoot() {
-        player.shoot(bullets);
+        // player.attack()이 이제 List<Bullet>을 반환합니다.
+        List<Bullet> newBullets = player.attack(); // ★ player.shoot() -> player.attack()
+        
+        if (newBullets != null && !newBullets.isEmpty()) {
+            playerBullets.addAll(newBullets); // ★ 리스트에 모두 추가
+        }
     }
        
-    public Player getPlayer() { return player; }
+    public PlayableCharacter getPlayer() { return player; } // ★ 반환 타입 변경
     
     @Override
     public void update(double deltaTime) {
         // --- 1. 상태 업데이트 (시간, 쿨타임 등) ---
         elapsedTime += deltaTime;
         
-        // --- 2. 객체 위치 및 상태 업데이트 ---
-        player.update(GameMain.getActiveKeys(), deltaTime);
-        for (Bullet b : bullets) b.update(deltaTime);
-        for (Enemy e : enemies) e.update(deltaTime, enemyBullets);
-        for (EnemyBullet eb : enemyBullets) eb.update(deltaTime);
+        // --- 2. 객체 위치 및 상태 업데이트 (리팩토링된 방식) ---
         
-        // --- 3. 충돌 감지 ---
-        // 총알 vs 적
-        for (Bullet bullet : bullets) {
+        // 2a. 플레이어 업데이트 (쿨다운, 이동)
+        player.update(deltaTime); // 쿨다운 갱신
+        player.handleInputAndMove(GameMain.getActiveKeys(), deltaTime); // 키 입력 및 이동 처리
+        // (수동 발사는 shoot() 메소드로 분리됨)
+
+        // 2b. 적 업데이트 (이동, AI 발사)
+        List<Bullet> newEnemyBullets = new ArrayList<>(); 
+        for (Enemy e : enemies) {
+            e.update(deltaTime); // 이동 처리
+            Bullet newEnemyBullet = e.updateAI(deltaTime); // AI 및 발사 처리
+            if (newEnemyBullet != null) {
+                newEnemyBullets.add(newEnemyBullet);
+            }
+        }
+        enemyBullets.addAll(newEnemyBullets); // 새로 발사된 총알을 메인 리스트에 추가
+
+        // 2c. 총알 업데이트
+        for (Bullet b : playerBullets) b.update(deltaTime);
+        for (Bullet eb : enemyBullets) eb.update(deltaTime);
+        
+        
+        // --- 3. 충돌 감지 (collidesWith 사용) ---
+        
+        // 3a. 플레이어 총알 vs 적
+        for (Bullet bullet : playerBullets) {
+            if (bullet.isDestroyed()) continue;
             for (Enemy enemy : enemies) {
-                if (bullet.isDestroyed || enemy.isDestroyed) continue;
-                double dx = bullet.x - enemy.x;
-                double dy = bullet.y - enemy.y;
-                double distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < bullet.getRadius() + enemy.getRadius()) {
-                    bullet.isDestroyed = true;
-                    enemy.takeDamage(player.damage);
-                    if (enemy.isDestroyed) {
+                if (enemy.isDestroyed()) continue;
+                
+                if (bullet.collidesWith(enemy)) {
+                    bullet.destroy(); 
+                    enemy.takeDamage(player.damage); // ★ 캐릭터의 데미지
+                    
+                    if (enemy.isDestroyed()) {
+                        // 경험치 및 골드 획득 로직
                         int finalGold = (int)(GameData.enemyBaseGold * player.getGoldMultiplier());
                         GameData.gold += finalGold;
                         double xpGained = 0;
@@ -125,37 +171,33 @@ public class PlayingState extends GameState {
             }
         }
         
-        // 적 총알 vs 플레이어
-        for (EnemyBullet eb : enemyBullets) {
-            if (eb.isDestroyed) continue;
-            double dx = player.x - eb.x;
-            double dy = player.y - eb.y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < player.getRadius() + eb.getRadius()) {
-                player.currentHp -= GameData.enemyDamage;
-                eb.isDestroyed = true;
+        // 3b. 적 총알 vs 플레이어
+        for (Bullet eb : enemyBullets) { 
+            if (eb.isDestroyed() || player.isDestroyed()) continue;
+            
+            if (player.collidesWith(eb)) { 
+                player.takeDamage(GameData.enemyDamage); 
+                eb.destroy(); 
             }
         }
 
-        // 플레이어 vs 적
+        // 3c. 플레이어 vs 적
         for (Enemy enemy : enemies) {
-            if (enemy.isDestroyed) continue;
-            double dx = player.x - enemy.x;
-            double dy = player.y - enemy.y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < player.getRadius() + enemy.getRadius()) {
-                player.currentHp -= GameData.enemyDamage;
-                enemy.isDestroyed = true;
+            if (enemy.isDestroyed() || player.isDestroyed()) continue;
+
+            if (player.collidesWith(enemy)) {
+                player.takeDamage(GameData.enemyDamage); 
+                enemy.destroy(); 
             }
         }
 
-        // --- 4. 객체 정리 (화면 이탈 및 파괴된 객체 제거) ---
-        bullets.removeIf(b -> b.isOffScreen || b.isDestroyed);
-        enemies.removeIf(e -> e.isOffScreen || e.isDestroyed);
-        enemyBullets.removeIf(eb -> eb.isOffScreen || eb.isDestroyed);
+        // --- 4. 객체 정리 (Getter 사용) ---
+        playerBullets.removeIf(b -> b.isOffScreen() || b.isDestroyed());
+        enemies.removeIf(e -> e.isOffScreen() || e.isDestroyed());
+        enemyBullets.removeIf(eb -> eb.isOffScreen() || eb.isDestroyed());
 
         // --- 5. 게임 상태 변경 (레벨업, 게임 오버) ---
-        if (player.currentHp <= 0) {
+        if (player.isDestroyed()) { 
             gsm.setState(new GameOverState(gsm));
             return; 
         }
@@ -165,7 +207,7 @@ public class PlayingState extends GameState {
             currentXp -= requiredXp;
             requiredXp *= 1.6;
             gsm.pushState(new LevelUpState(gsm, this)); 
-            return;
+            return; 
         }
 
         // --- 6. 새로운 객체 생성 (적 스폰) ---
@@ -176,6 +218,11 @@ public class PlayingState extends GameState {
         }
         
         // --- 7. 난이도 및 UI 업데이트 ---
+        updateDifficulty(deltaTime);
+        uiController.update(level, currentXp, requiredXp, player.currentHp, player.maxHp, elapsedTime);
+    }
+    
+    private void updateDifficulty(double deltaTime) {
         if (elapsedTime > (difficultyTier + 1) * 30) {
             difficultyTier++;
             GameData.enemyBaseHealth *= 1.2;
@@ -184,19 +231,19 @@ public class PlayingState extends GameState {
             GameData.enemyDamage *= 1.5;
             if(GameData.enemySpeed <= 250)
             GameData.enemySpeed +=15;
-            System.out.println(String.format("난이도 증가! [%d단계] 적 체력: %.0f, 생성 속도: %.2f초, 기본 경험치: %.1f, 획득 골드: %d,적 데미지 %d", difficultyTier, GameData.enemyBaseHealth, spawnInterval, GameData.enemyBaseXP, (int)(GameData.enemyBaseGold * player.getGoldMultiplier()),(int)GameData.enemyDamage));
+            // System.out.println(String.format("난이도 증가! ..."));
         }
-        uiController.update(level, currentXp, requiredXp, player.currentHp, player.maxHp, elapsedTime);
     }
 
     @Override
     public void render() {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, GameMain.WIDTH, GameMain.HEIGHT);
+        
         player.render(gc);
-        for (Bullet b : bullets) b.render(gc);
+        for (Bullet b : playerBullets) b.render(gc);
         for (Enemy e : enemies) e.render(gc);
-        for (EnemyBullet eb : enemyBullets) eb.render(gc);
+        for (Bullet eb : enemyBullets) eb.render(gc); 
     }
     
     private void spawnEnemy() {

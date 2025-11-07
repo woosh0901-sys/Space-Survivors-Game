@@ -1,41 +1,71 @@
-package entities; // 이 파일이 com.mygame.entities 패키지에 속해 있음을 선언합니다.
+package entities;
 
-import javafx.scene.canvas.GraphicsContext; // 캔버스에 그래픽을 그리기 위한 GraphicsContext 클래스를 가져옵니다.
-import javafx.scene.paint.Color; // 색상을 다루기 위한 Color 클래스를 가져옵니다.
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import main.GameMain; // GameMain의 화면 크기 참조
 
-public class Bullet { // 총알 객체를 정의하는 Bullet 클래스입니다.
+/**
+ * 플레이어의 총알과 적의 총알을 모두 처리하는 통합 Bullet 클래스입니다.
+ * Entity 클래스를 상속받습니다.
+ */
+public class Bullet extends Entity {
 
-    public double x, y; // 총알의 현재 x, y 좌표를 저장하는 변수입니다.
-    private double speed = 1080; // 총알의 이동 속도를 설정합니다 (플레이어보다 빠르게).
-    private double size = 40; // 총알의 지름(크기)을 설정합니다.
-    
-    // 총알이 화면 밖으로 나갔는지 확인하기 위한 변수 // 상태 변수에 대한 설명 주석입니다.
-    public boolean isOffScreen = false; // 총알이 화면 밖으로 나갔는지 여부를 저장하는 변수입니다.
-    public boolean isDestroyed = false; // 총알이 적과 충돌하여 파괴되었는지 여부를 저장하는 변수입니다.
-    
-    // 생성자: 총알이 생성될 위치를 받는다 // 생성자의 역할을 설명하는 주석입니다.
-    public Bullet(double startX, double startY) { // Bullet 객체를 생성하는 생성자입니다. 총알의 시작 위치를 매개변수로 받습니다.
-        this.x = startX; // x 좌표를 생성 시 받은 startX 값으로 초기화합니다.
-        this.y = startY; // y 좌표를 생성 시 받은 startY 값으로 초기화합니다.
+    // --- 상수로 정의 ---
+    public static final double PLAYER_BULLET_SPEED = -1080.0; // 음수 = 위로 이동
+    public static final double PLAYER_BULLET_SIZE = 40.0;
+    public static final Color PLAYER_BULLET_COLOR = Color.YELLOW;
+
+    public static final double ENEMY_BULLET_SPEED = 400.0; // 양수 = 아래로 이동
+    public static final double ENEMY_BULLET_SIZE = 15.0;
+    public static final Color ENEMY_BULLET_COLOR = Color.MAGENTA;
+
+    // --- private 캡슐화 ---
+    private double speed; // 이동 속도 (방향 포함)
+    private Color color;
+    private boolean isOffScreen = false;
+
+    /**
+     * 통합 총알 생성자
+     * @param startX 시작 x 좌표
+     * @param startY 시작 y 좌표
+     * @param size 총알 크기 (지름)
+     * @param speed 총알 속도 (음수면 위로, 양수면 아래로)
+     * @param color 총알 색상
+     */
+    public Bullet(double startX, double startY, double size, double speed, Color color) {
+        // 부모(Entity) 생성자 호출
+        super(startX, startY, size, size); // width와 height가 동일 (원)
+        
+        this.speed = speed;
+        this.color = color;
     }
 
-    // 매 프레임마다 호출되어 총알을 위로 움직인다 // update 메소드의 역할을 설명하는 주석입니다.
-    public void update(double deltaTime) { // 매 프레임마다 총알의 상태를 갱신하는 메소드입니다.
-        y -= speed * deltaTime; // 속도와 프레임 시간을 곱한 만큼 y 좌표를 감소시켜 총알을 위로 이동시킵니다.
-        
-        // 총알이 화면 위쪽으로 완전히 사라졌는지 체크 // 화면 이탈 확인에 대한 설명 주석입니다.
-        if (y < -size) { // 총알의 y좌표가 화면 상단(-size)을 넘어갔는지 확인합니다.
-            isOffScreen = true; // 화면 밖으로 나갔다고 표시합니다.
+    /**
+     * 매 프레임마다 총알을 이동시킵니다.
+     */
+    @Override
+    public void update(double deltaTime) {
+        y += speed * deltaTime; // speed 값에 따라 위 또는 아래로 이동
+
+        // 화면 밖으로 나갔는지 체크 (위쪽 또는 아래쪽)
+        if (y < 0 - height || y > GameMain.HEIGHT + height) {
+            isOffScreen = true;
         }
     }
 
-    // 화면에 총알을 그린다 // render 메소드의 역할을 설명하는 주석입니다.
-    public void render(GraphicsContext gc) { // 화면에 총알을 그리는 메소드입니다.
-        gc.setFill(Color.YELLOW); // 그리기 색상을 노란색으로 설정합니다.
-        gc.fillOval(x - size / 2, y - size / 2, size, size); // (x, y)가 중심이 되도록 원(총알)을 채워서 그립니다.
+    /**
+     * 총알을 화면에 그립니다.
+     */
+    @Override
+    public void render(GraphicsContext gc) {
+        gc.setFill(this.color); // 생성자에서 받은 색상으로 설정
+        gc.fillOval(x - width / 2, y - height / 2, width, height); // (x,y)가 중심이 되도록
     }
-    
-    public double getRadius() { // 총알의 충돌 반경을 반환하는 메소드입니다.
-        return size / 2; // 총알 크기(지름)의 절반을 반경으로 반환합니다.
+
+    /**
+     * 총알이 화면 밖에 나갔는지 여부를 반환합니다. (Getter)
+     */
+    public boolean isOffScreen() {
+        return this.isOffScreen;
     }
 }

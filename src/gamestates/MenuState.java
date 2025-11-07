@@ -9,16 +9,9 @@ public class MenuState extends GameState {
         super(gsm);
         
         try {
-            // 1. FXML 로더를 생성합니다.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Menu.fxml"));
-            
-            // 2. FXML 파일을 로드하여 Pane(VBox)을 생성합니다.
             this.rootNode = loader.load();
-            
-            // 3. FXML 파일에 연결된 컨트롤러 인스턴스를 가져옵니다.
             MenuController controller = loader.getController();
-            
-            // 4. 컨트롤러에 GameStateManager를 전달하여 초기화합니다.
             controller.init(gsm);
             
         } catch (IOException e) {
