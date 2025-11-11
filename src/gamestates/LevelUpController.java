@@ -7,12 +7,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import main.GameConstants;
 
 public class LevelUpController {
 
     private GameStateManager gsm;
     private PlayingState playingState;
-    
+
     @FXML
     private VBox buttonContainer;
 
@@ -21,30 +22,55 @@ public class LevelUpController {
         this.playingState = playingState;
         createUpgradeButtons();
     }
-    
+
     private void createUpgradeButtons() {
-        List<UpgradeOption> allUpgrades = new ArrayList<>();
-        allUpgrades.add(new UpgradeOption("최대 체력 +10%", () -> playingState.getPlayer().applyHpBuff(0.10)));
-        allUpgrades.add(new UpgradeOption("공격력 +5", () -> playingState.getPlayer().applyDamageBuff(5)));
-        allUpgrades.add(new UpgradeOption("공격 속도 +5%", () -> playingState.getPlayer().applyAttackSpeedBuff(0.05)));
-        allUpgrades.add(new UpgradeOption("획득골드 +10%", () -> playingState.getPlayer().applyGoldBuff(0.10)));
-        if (playingState.getPlayer().getSpeed() < playingState.getPlayer().getMaxSpeed()) {
-             allUpgrades.add(new UpgradeOption("이동 속도 +50", () -> playingState.getPlayer().applySpeedBuff(50)));
-        }
-        
+        List<UpgradeOption> allUpgrades = createAllUpgradeOptions();
         Collections.shuffle(allUpgrades);
-        
+
         int optionsToShow = Math.min(3, allUpgrades.size());
         for (int i = 0; i < optionsToShow; i++) {
             UpgradeOption option = allUpgrades.get(i);
-            Button upgradeButton = new Button(option.description);
-            upgradeButton.setFont(new Font("Arial", 20));
-            upgradeButton.setMinWidth(300);
-            upgradeButton.setOnAction(e -> {
-                option.effect.run();
-                gsm.popState();
-            });
+            Button upgradeButton = createUpgradeButton(option);
             buttonContainer.getChildren().add(upgradeButton);
         }
+    }
+    
+    private List<UpgradeOption> createAllUpgradeOptions() {
+        List<UpgradeOption> upgrades = new ArrayList<>();
+        
+        upgrades.add(new UpgradeOption(
+            "최대 체력 +10%", 
+            () -> playingState.getPlayer().applyHpBuff(GameConstants.HP_BUFF_PERCENTAGE)
+        ));
+        
+        upgrades.add(new UpgradeOption(
+            "공격력 +5", 
+            () -> playingState.getPlayer().applyDamageBuff(GameConstants.DAMAGE_BUFF_AMOUNT)
+        ));
+        	
+        upgrades.add(new UpgradeOption(
+            "획득골드 +10%", 
+            () -> playingState.getPlayer().applyGoldBuff(GameConstants.GOLD_BUFF_PERCENTAGE)
+        ));
+        
+        if (playingState.getPlayer().getSpeed() < playingState.getPlayer().getMaxSpeed()) {
+            upgrades.add(new UpgradeOption(
+                "이동 속도 +50", 
+                () -> playingState.getPlayer().applySpeedBuff(GameConstants.SPEED_BUFF_AMOUNT)
+            ));
+        }
+        
+        return upgrades;
+    }
+    
+    private Button createUpgradeButton(UpgradeOption option) {
+        Button button = new Button(option.description);
+        button.setFont(new Font("Arial", 20));
+        button.setMinWidth(300);
+        button.setOnAction(e -> {
+            option.effect.run();
+            gsm.popState();
+        });
+        return button;
     }
 }

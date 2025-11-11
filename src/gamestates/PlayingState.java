@@ -3,12 +3,11 @@ package gamestates;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import entities.Bullet; 
+import entities.Boss;
+import entities.Bullet;
+import entities.CharacterFactory;
 import entities.Enemy;
-import entities.PlayableCharacter; // ★ Player 대신 PlayableCharacter
-import entities.Player;             // (DEFAULT 로드용)
-import entities.Player2;         // (TANK 로드용)
+import entities.PlayableCharacter;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
@@ -16,18 +15,20 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import main.GameConstants;
 import main.GameData;
 import main.GameMain;
 
 public class PlayingState extends GameState {
     
     private GraphicsContext gc;
-    // --- ★ 플레이어 타입 변경 ---
-    private PlayableCharacter player; 
+    private PlayableCharacter player;
     
-    private List<Bullet> playerBullets; 
+    private List<Bullet> playerBullets;
     private List<Enemy> enemies;
-    private List<Bullet> enemyBullets; 
+    private List<Boss> bosses; // ★ 보스 리스트
+    private List<Bullet> enemyBullets;
     
     private int level;
     private double currentXp, requiredXp;
@@ -40,20 +41,22 @@ public class PlayingState extends GameState {
     private int difficultyTier = 0;
     private GameUIController uiController;
     
+    // ★ 보스 관련 변수
+    private double nextBossTime = GameConstants.BOSS_SPAWN_INTERVAL;
+    private boolean finalBossSpawned = false;
+    private boolean gameCleared = false;
+    
     public PlayingState(GameStateManager gsm) {
         super(gsm);
         
         try {
-            // 1. 게임 월드를 그릴 Canvas 생성
             Canvas gameCanvas = new Canvas(GameMain.WIDTH, GameMain.HEIGHT);
             gc = gameCanvas.getGraphicsContext2D();
 
-            // 2. FXML로 만든 UI 로드
             FXMLLoader loader = new FXMLLoader(getClass().getResource("GameUI.fxml"));
             Pane uiPane = loader.load();
-            uiController = loader.getController(); // 컨트롤러 인스턴스 저장
+            uiController = loader.getController();
 
-            // 3. StackPane으로 Canvas 위에 UI Pane을 겹침
             StackPane stack = new StackPane();
             stack.getChildren().addAll(gameCanvas, uiPane);
             this.rootNode = stack;
@@ -62,37 +65,38 @@ public class PlayingState extends GameState {
             e.printStackTrace();
         }
         
-        init(); 
+        init();
     }
 
     public void init() {
-    	// --- ★ 캐릭터 로딩 부분 수정 ---
         double startX = GameMain.WIDTH / 2;
         double startY = GameMain.HEIGHT - 50;
         
-        if (GameData.selectedCharacter.equals("TANK")) {
-            player = new Player2(startX, startY);
-            System.out.println("탱크 캐릭터로 시작합니다.");
-        } else {
-            // 기본값은 'DEFAULT' 캐릭터 (Player.java)
-            player = new Player(startX, startY);
-            System.out.println("기본 캐릭터로 시작합니다.");
-        }
+        player = CharacterFactory.createCharacter(GameData.selectedCharacter, startX, startY);
+        System.out.println("캐릭터 로드: " + GameData.selectedCharacter);
         
         playerBullets = new ArrayList<>();
         enemies = new ArrayList<>();
-        enemyBullets = new ArrayList<>(); 
+        bosses = new ArrayList<>(); // ★ 보스 리스트 초기화
+        enemyBullets = new ArrayList<>();
         
         level = 1;
         currentXp = 0;
-        requiredXp = 150;
+        requiredXp = GameConstants.INITIAL_REQUIRED_XP;
         spawnTimer = 0;
-        spawnInterval = 1.0;
+        spawnInterval = GameConstants.INITIAL_SPAWN_INTERVAL;
         random = new Random();
         elapsedTime = 0;
         difficultyTier = 0;
         
-        // 게임 시작 시 스탯 초기화
+        nextBossTime = GameConstants.BOSS_SPAWN_INTERVAL;
+        finalBossSpawned = false;
+        gameCleared = false;
+        
+        resetGameStats();
+    }
+    
+    private void resetGameStats() {
         GameData.enemyBaseHealth = 50;
         GameData.enemyBaseXP = 25;
         GameData.enemyBaseGold = 10;
@@ -100,139 +104,305 @@ public class PlayingState extends GameState {
         GameData.enemySpeed = 150;
     }
     
-    /**
-     * GameMain에서 스페이스바를 눌렀을 때 호출됩니다.
-     * (공격 방식이 List<Bullet>로 변경됨에 따라 수정)
-     */
     public void shoot() {
-        // player.attack()이 이제 List<Bullet>을 반환합니다.
-        List<Bullet> newBullets = player.attack(); // ★ player.shoot() -> player.attack()
+        List<Bullet> newBullets = player.attack();
         
         if (newBullets != null && !newBullets.isEmpty()) {
-            playerBullets.addAll(newBullets); // ★ 리스트에 모두 추가
+            playerBullets.addAll(newBullets);
         }
     }
        
-    public PlayableCharacter getPlayer() { return player; } // ★ 반환 타입 변경
+    public PlayableCharacter getPlayer() {
+        return player;
+    }
     
     @Override
     public void update(double deltaTime) {
-        // --- 1. 상태 업데이트 (시간, 쿨타임 등) ---
+        if (gameCleared) return; // 게임 클리어 후 업데이트 중단
+        
+        updateGameTime(deltaTime);
+        updateEntities(deltaTime);
+        handleCollisions();
+        cleanupDestroyedEntities();
+        checkGameState();
+        handleSpawning(deltaTime); // ★ 수정됨
+        updateDifficulty(deltaTime);
+        updateUI();
+    }
+    
+    private void updateGameTime(double deltaTime) {
         elapsedTime += deltaTime;
-        
-        // --- 2. 객체 위치 및 상태 업데이트 (리팩토링된 방식) ---
-        
-        // 2a. 플레이어 업데이트 (쿨다운, 이동)
-        player.update(deltaTime); // 쿨다운 갱신
-        player.handleInputAndMove(GameMain.getActiveKeys(), deltaTime); // 키 입력 및 이동 처리
-        // (수동 발사는 shoot() 메소드로 분리됨)
+    }
+    
+    private void updateEntities(double deltaTime) {
+        player.update(deltaTime);
+        player.handleInputAndMove(GameMain.getActiveKeys(), deltaTime);
 
-        // 2b. 적 업데이트 (이동, AI 발사)
-        List<Bullet> newEnemyBullets = new ArrayList<>(); 
-        for (Enemy e : enemies) {
-            e.update(deltaTime); // 이동 처리
-            Bullet newEnemyBullet = e.updateAI(deltaTime); // AI 및 발사 처리
-            if (newEnemyBullet != null) {
-                newEnemyBullets.add(newEnemyBullet);
+        updateEnemies(deltaTime);
+        updateBosses(deltaTime); // ★ 보스 업데이트
+
+        playerBullets.forEach(b -> b.update(deltaTime));
+        enemyBullets.forEach(b -> b.update(deltaTime));
+    }
+    
+    private void updateEnemies(double deltaTime) {
+        List<Bullet> newEnemyBullets = new ArrayList<>();
+        
+        for (Enemy enemy : enemies) {
+            enemy.update(deltaTime);
+            Bullet bullet = enemy.updateAI(deltaTime);
+            if (bullet != null) {
+                newEnemyBullets.add(bullet);
             }
         }
-        enemyBullets.addAll(newEnemyBullets); // 새로 발사된 총알을 메인 리스트에 추가
-
-        // 2c. 총알 업데이트
-        for (Bullet b : playerBullets) b.update(deltaTime);
-        for (Bullet eb : enemyBullets) eb.update(deltaTime);
         
+        enemyBullets.addAll(newEnemyBullets);
+    }
+    
+    // ★ 보스 업데이트
+    private void updateBosses(double deltaTime) {
+        List<Bullet> newBossBullets = new ArrayList<>();
         
-        // --- 3. 충돌 감지 (collidesWith 사용) ---
+        for (Boss boss : bosses) {
+            boss.update(deltaTime);
+            List<Bullet> bullets = boss.updateAI(deltaTime);
+            if (bullets != null) {
+                newBossBullets.addAll(bullets);
+            }
+        }
         
-        // 3a. 플레이어 총알 vs 적
+        enemyBullets.addAll(newBossBullets);
+    }
+    
+    private void handleCollisions() {
+        handlePlayerBulletCollisions();
+        handleEnemyBulletCollisions();
+        handlePlayerEnemyCollisions();
+        handlePlayerBossCollisions(); // ★ 보스 충돌
+    }
+    
+    private void handlePlayerBulletCollisions() {
+        // 일반 적과의 충돌
         for (Bullet bullet : playerBullets) {
             if (bullet.isDestroyed()) continue;
+            
             for (Enemy enemy : enemies) {
                 if (enemy.isDestroyed()) continue;
                 
                 if (bullet.collidesWith(enemy)) {
-                    bullet.destroy(); 
-                    enemy.takeDamage(player.damage); // ★ 캐릭터의 데미지
-                    
-                    if (enemy.isDestroyed()) {
-                        // 경험치 및 골드 획득 로직
-                        int finalGold = (int)(GameData.enemyBaseGold * player.getGoldMultiplier());
-                        GameData.gold += finalGold;
-                        double xpGained = 0;
-                        double luckRoll = random.nextDouble();
-                        if (luckRoll < 0.01) xpGained = GameData.enemyBaseXP * 3;
-                        else if (luckRoll < 0.1) xpGained = GameData.enemyBaseXP * 2;
-                        else xpGained = GameData.enemyBaseXP;
-                        currentXp += xpGained;
-                    }
-                    break; 
+                    handleEnemyHit(bullet, enemy);
+                    break;
                 }
             }
         }
         
-        // 3b. 적 총알 vs 플레이어
-        for (Bullet eb : enemyBullets) { 
-            if (eb.isDestroyed() || player.isDestroyed()) continue;
+        // ★ 보스와의 충돌
+        for (Bullet bullet : playerBullets) {
+            if (bullet.isDestroyed()) continue;
             
-            if (player.collidesWith(eb)) { 
-                player.takeDamage(GameData.enemyDamage); 
-                eb.destroy(); 
+            for (Boss boss : bosses) {
+                if (boss.isDestroyed()) continue;
+                
+                if (bullet.collidesWith(boss)) {
+                    handleBossHit(bullet, boss);
+                    break;
+                }
             }
         }
-
-        // 3c. 플레이어 vs 적
+    }
+    
+    private void handleEnemyHit(Bullet bullet, Enemy enemy) {
+        bullet.destroy();
+        enemy.takeDamage(player.damage);
+        
+        if (enemy.isDestroyed()) {
+            grantRewards();
+        }
+    }
+    
+    // ★ 보스 피격 처리
+    private void handleBossHit(Bullet bullet, Boss boss) {
+        bullet.destroy();
+        boss.takeDamage(player.damage);
+        
+        if (boss.isDestroyed()) {
+            grantBossRewards(boss);
+            
+            // 최종 보스를 잡으면 게임 클리어
+            if (boss.isFinalBoss()) {
+                gameCleared = true;
+                gsm.setState(new GameClearState(gsm, elapsedTime));
+            }
+        }
+    }
+    
+    private void grantRewards() {
+        grantGold();
+        grantExperience();
+    }
+    
+    // ★ 보스 보상
+    private void grantBossRewards(Boss boss) {
+        // 골드 대량 지급
+        int bossGold = boss.isFinalBoss() ? 
+            (int)(GameData.enemyBaseGold * 100 * player.getGoldMultiplier()) :
+            (int)(GameData.enemyBaseGold * 50 * player.getGoldMultiplier());
+        GameData.gold += bossGold;
+        
+        // 경험치 대량 지급
+        double bossXp = boss.isFinalBoss() ? 
+             GameConstants.FINAL_BOSS_XP_REWARD : 
+             GameConstants.BOSS_XP_REWARD;
+        currentXp += bossXp;
+        
+        System.out.println("보스 처치! 골드 +" + bossGold + ", XP +" + bossXp);
+    }
+    
+    private void grantGold() {
+        int finalGold = (int)(GameData.enemyBaseGold * player.getGoldMultiplier());
+        GameData.gold += finalGold;
+    }
+    
+    private void grantExperience() {
+        double xpGained = calculateXpGain();
+        currentXp += xpGained;
+    }
+    
+    private double calculateXpGain() {
+        double luckRoll = random.nextDouble();
+        
+        if (luckRoll < GameConstants.XP_TRIPLE_CHANCE) {
+            return GameData.enemyBaseXP * GameConstants.XP_TRIPLE_MULTIPLIER;
+        } else if (luckRoll < GameConstants.XP_DOUBLE_CHANCE) {
+            return GameData.enemyBaseXP * GameConstants.XP_DOUBLE_MULTIPLIER;
+        }
+        
+        return GameData.enemyBaseXP;
+    }
+    
+    private void handleEnemyBulletCollisions() {
+        for (Bullet bullet : enemyBullets) {
+            if (bullet.isDestroyed() || player.isDestroyed()) continue;
+            
+            if (player.collidesWith(bullet)) {
+                player.takeDamage(GameData.enemyDamage);
+                bullet.destroy();
+            }
+        }
+    }
+    
+    private void handlePlayerEnemyCollisions() {
         for (Enemy enemy : enemies) {
             if (enemy.isDestroyed() || player.isDestroyed()) continue;
 
             if (player.collidesWith(enemy)) {
-                player.takeDamage(GameData.enemyDamage); 
-                enemy.destroy(); 
+                player.takeDamage(GameData.enemyDamage);
+                enemy.destroy();
             }
         }
-
-        // --- 4. 객체 정리 (Getter 사용) ---
+    }
+    
+    // ★ 플레이어와 보스 충돌
+    private void handlePlayerBossCollisions() {
+        for (Boss boss : bosses) {
+            if (boss.isDestroyed() || player.isDestroyed()) continue;
+            if (player.collidesWith(boss)) {
+                player.takeDamage(GameData.enemyDamage * 2); // 보스는 더 강한 데미지
+                // 보스는 충돌해도 파괴되지 않음
+            }
+        }
+    }
+    
+    private void cleanupDestroyedEntities() {
         playerBullets.removeIf(b -> b.isOffScreen() || b.isDestroyed());
         enemies.removeIf(e -> e.isOffScreen() || e.isDestroyed());
-        enemyBullets.removeIf(eb -> eb.isOffScreen() || eb.isDestroyed());
-
-        // --- 5. 게임 상태 변경 (레벨업, 게임 오버) ---
-        if (player.isDestroyed()) { 
+        bosses.removeIf(b -> b.isOffScreen() || b.isDestroyed()); // ★ 보스 정리
+        enemyBullets.removeIf(b -> b.isOffScreen() || b.isDestroyed());
+    }
+    
+    private void checkGameState() {
+        if (player.isDestroyed()) {
             gsm.setState(new GameOverState(gsm));
-            return; 
+            return;
         }
         
         if (currentXp >= requiredXp) {
-            level++;
-            currentXp -= requiredXp;
-            requiredXp *= 1.6;
-            gsm.pushState(new LevelUpState(gsm, this)); 
-            return; 
+            handleLevelUp();
         }
-
-        // --- 6. 새로운 객체 생성 (적 스폰) ---
+    }
+    
+    private void handleLevelUp() {
+        level++;
+        currentXp -= requiredXp;
+        requiredXp *= GameConstants.XP_MULTIPLIER;
+        gsm.pushState(new LevelUpState(gsm, this));
+    }
+    
+    // ★ 스폰 로직 통합
+    private void handleSpawning(double deltaTime) {
+        // 보스 스폰 체크
+        if (elapsedTime >= nextBossTime && !finalBossSpawned) {
+            spawnBoss();
+        }
+        
+        // 10분 이후에는 일반 적 스폰 중단
+        if (elapsedTime < GameConstants.FINAL_BOSS_TIME) {
+            handleEnemySpawning(deltaTime);
+        }
+    }
+    
+    private void handleEnemySpawning(double deltaTime) {
         spawnTimer += deltaTime;
+        
         if (spawnTimer >= spawnInterval) {
             spawnEnemy();
             spawnTimer = 0;
         }
+    }
+    
+    // ★ 보스 스폰
+    private void spawnBoss() {
+        double x = GameMain.WIDTH / 2;
         
-        // --- 7. 난이도 및 UI 업데이트 ---
-        updateDifficulty(deltaTime);
-        uiController.update(level, currentXp, requiredXp, player.currentHp, player.maxHp, elapsedTime);
+        // 10분째에 최종 보스 스폰
+        if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) {
+            bosses.add(new Boss(x, true));
+            finalBossSpawned = true;
+            System.out.println("최종 보스 출현!");
+        } else {
+            // 2분마다 중간 보스 스폰
+            bosses.add(new Boss(x, false));
+            nextBossTime += GameConstants.BOSS_SPAWN_INTERVAL;
+            System.out.println("보스 출현!");
+        }
     }
     
     private void updateDifficulty(double deltaTime) {
-        if (elapsedTime > (difficultyTier + 1) * 30) {
+        // 10분 이후에는 난이도 증가 중단
+        if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) return;
+        
+        if (elapsedTime > (difficultyTier + 1) * GameConstants.DIFFICULTY_TIER_DURATION) {
             difficultyTier++;
-            GameData.enemyBaseHealth *= 1.2;
-            if (spawnInterval > 0.2) spawnInterval /= 1.1;
-            GameData.enemyBaseGold *= 1.2;
-            GameData.enemyDamage *= 1.5;
-            if(GameData.enemySpeed <= 250)
-            GameData.enemySpeed +=15;
-            // System.out.println(String.format("난이도 증가! ..."));
+            
+            GameData.enemyBaseHealth *= GameConstants.ENEMY_HEALTH_MULTIPLIER;
+            
+            if (spawnInterval > GameConstants.MIN_SPAWN_INTERVAL) {
+                spawnInterval /= GameConstants.SPAWN_INTERVAL_DIVIDER;
+            }
+            
+            // --- 여기가 끊긴 부분 ---
+            GameData.enemyBaseGold *= GameConstants.ENEMY_GOLD_MULTIPLIER;
+            GameData.enemyDamage *= GameConstants.ENEMY_DAMAGE_MULTIPLIER;
+            
+            if (GameData.enemySpeed <= GameConstants.ENEMY_MAX_SPEED) {
+                GameData.enemySpeed += GameConstants.ENEMY_SPEED_INCREMENT;
+            }
         }
+    }
+    
+    private void updateUI() {
+        uiController.update(level, currentXp, requiredXp, 
+                          player.currentHp, player.maxHp, elapsedTime);
     }
 
     @Override
@@ -241,9 +411,10 @@ public class PlayingState extends GameState {
         gc.fillRect(0, 0, GameMain.WIDTH, GameMain.HEIGHT);
         
         player.render(gc);
-        for (Bullet b : playerBullets) b.render(gc);
-        for (Enemy e : enemies) e.render(gc);
-        for (Bullet eb : enemyBullets) eb.render(gc); 
+        playerBullets.forEach(b -> b.render(gc));
+        enemies.forEach(e -> e.render(gc));
+        bosses.forEach(b -> b.render(gc)); // ★ 보스 렌더링 추가
+        enemyBullets.forEach(b -> b.render(gc));
     }
     
     private void spawnEnemy() {

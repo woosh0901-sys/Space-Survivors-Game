@@ -9,17 +9,17 @@ public class GameData {
 
     private static final String SAVE_FILE = "save_data.txt";
 
-    // ★ 캐릭터 선택 변수
-    public static String selectedCharacter = "DEFAULT"; // 기본값
+    // 캐릭터 선택
+    public static String selectedCharacter = CharacterType.DEFAULT.getId();
 
-    // 재화 및 스탯 (영구 저장됨)
+    // 재화 및 스탯 (영구)
     public static int gold = 0;
     public static int playerMaxHp = 100;
     public static int playerDamage = 50;
-    public static double playerAttackSpeed = 0.5;
-    public static double playerMoveSpeed = 450;
+    public static double playerAttackSpeed = 0.8; // ★ 시작 값 (0.8)
+    public static double playerMoveSpeed = 450; 
 
-    // 업그레이드 레벨 및 비용 (영구 저장됨)
+    // 업그레이드 레벨 및 비용
     public static int hpLevel = 1;
     public static int damageLevel = 1;
     public static int attackSpeedLevel = 1;
@@ -27,8 +27,14 @@ public class GameData {
     public static double hpUpgradeCost = 50;
     public static double damageUpgradeCost = 70;
     public static double attackSpeedUpgradeCost = 100;
+    
+    public static final int MAX_UPGRADE_LEVEL = 30;
 
-    // 시간에 따라 변하는 게임 내 변수 (저장 안 함)
+    // ★ 공격 속도 계산을 위한 새 상수 ★
+    public static final double ATTACK_SPEED_START = 0.8;
+    public static final double ATTACK_SPEED_END = 0.5;
+
+    // 게임 내 변수 (게임 시작 시 초기화됨)
     public static double enemyBaseHealth = 50;
     public static double enemyBaseXP = 25;
     public static double enemyBaseGold = 10;
@@ -37,11 +43,11 @@ public class GameData {
     
     public static void save() {
         try (FileWriter writer = new FileWriter(SAVE_FILE)) {
-            writer.write(selectedCharacter + "\n"); // ★ 캐릭터 저장
+            writer.write(selectedCharacter + "\n");
             writer.write(gold + "\n");
             writer.write(playerMaxHp + "\n");
             writer.write(playerDamage + "\n");
-            writer.write(playerAttackSpeed + "\n");
+            writer.write(playerAttackSpeed + "\n"); // 현재 값 저장
             writer.write(playerMoveSpeed + "\n");
             writer.write(hpLevel + "\n");
             writer.write(damageLevel + "\n");
@@ -63,11 +69,11 @@ public class GameData {
         }
 
         try (Scanner scanner = new Scanner(file)) {
-            selectedCharacter = scanner.nextLine(); // ★ 캐릭터 불러오기
+            selectedCharacter = scanner.nextLine();
             gold = Integer.parseInt(scanner.nextLine());
             playerMaxHp = Integer.parseInt(scanner.nextLine());
             playerDamage = Integer.parseInt(scanner.nextLine());
-            playerAttackSpeed = Double.parseDouble(scanner.nextLine());
+            playerAttackSpeed = Double.parseDouble(scanner.nextLine()); // 일단 저장된 값 로드
             playerMoveSpeed = Double.parseDouble(scanner.nextLine());
             hpLevel = Integer.parseInt(scanner.nextLine());
             damageLevel = Integer.parseInt(scanner.nextLine());
@@ -75,21 +81,25 @@ public class GameData {
             hpUpgradeCost = Double.parseDouble(scanner.nextLine());
             damageUpgradeCost = Double.parseDouble(scanner.nextLine());
             attackSpeedUpgradeCost = Double.parseDouble(scanner.nextLine());
+            
+            // ★ 중요: 로드된 레벨을 기반으로 공속 값을 강제 재계산
+            // (이전 버전의 잘못된 공속 값을 덮어쓰기)
+            playerAttackSpeed = calculateAttackSpeedByLevel(attackSpeedLevel);
+            
             System.out.println("게임 데이터를 불러왔습니다. (캐릭터: " + selectedCharacter + ")");
         } catch (Exception e) {
             System.err.println("데이터 불러오기 오류. 파일을 삭제합니다.");
             file.delete();
-            reset(); // 오류 시 초기화
+            reset(); // 로드 실패 시 초기화
         }
     }
     
     public static void reset() {
-        selectedCharacter = "DEFAULT"; // ★ 리셋 시 기본값
+        selectedCharacter = CharacterType.DEFAULT.getId();
         gold = 0;
         playerMaxHp = 100;
         playerDamage = 50;
-        playerAttackSpeed = 0.5;
-        playerMoveSpeed = 600;
+        playerMoveSpeed = 450; 
         hpLevel = 1;
         damageLevel = 1;
         attackSpeedLevel = 1;
@@ -97,11 +107,81 @@ public class GameData {
         damageUpgradeCost = 70;
         attackSpeedUpgradeCost = 100;
         enemyDamage = 10;
+        
+        // ★ 중요: 리셋 시에도 재계산
+        playerAttackSpeed = calculateAttackSpeedByLevel(attackSpeedLevel);
     }
     
-    // 업그레이드 메소드들
-    public static boolean upgradeMaxHp() { if (gold >= hpUpgradeCost) { gold -= hpUpgradeCost; playerMaxHp += 20; hpLevel++; hpUpgradeCost *= 1.25; return true; } return false; }
-    public static boolean upgradeDamage() { if (gold >= damageUpgradeCost) { gold -= damageUpgradeCost; playerDamage += 5; damageLevel++; damageUpgradeCost *= 1.25; return true; } return false; }
-    public static boolean upgradeAttackSpeed() { if (gold >= attackSpeedUpgradeCost && playerAttackSpeed > 0.1) { gold -= attackSpeedUpgradeCost; playerAttackSpeed *= 0.9; attackSpeedLevel++; attackSpeedUpgradeCost *= 1.25; return true; } return false; }
- 
+    // --- 업그레이드 로직 ---
+    
+    private static boolean performUpgrade(double cost, Runnable upgradeAction) {
+        if (gold >= cost) {
+            gold -= (int)cost; 
+            upgradeAction.run(); 
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean upgradeMaxHp() {
+        if (hpLevel >= MAX_UPGRADE_LEVEL) {
+            return false;
+        }
+        
+        return performUpgrade(hpUpgradeCost, () -> {
+            playerMaxHp += GameConstants.HP_UPGRADE_AMOUNT;
+            hpLevel++;
+            hpUpgradeCost *= GameConstants.UPGRADE_COST_MULTIPLIER;
+        });
+    }
+    
+    public static boolean upgradeDamage() {
+        if (damageLevel >= MAX_UPGRADE_LEVEL) {
+            return false;
+        }
+        
+        return performUpgrade(damageUpgradeCost, () -> {
+            playerDamage += GameConstants.DAMAGE_UPGRADE_AMOUNT;
+            damageLevel++;
+            damageUpgradeCost *= GameConstants.UPGRADE_COST_MULTIPLIER;
+        });
+    }
+    
+    /**
+     * ★ 공격 속도 업그레이드 (선형 보간 로직 적용) ★
+     */
+    public static boolean upgradeAttackSpeed() {
+        if (attackSpeedLevel >= MAX_UPGRADE_LEVEL) {
+            return false; // 최대 레벨
+        }
+        
+        return performUpgrade(attackSpeedUpgradeCost, () -> {
+            attackSpeedLevel++; // 레벨 증가
+            
+            // ★ 핵심: 레벨에 맞춰 값을 '계산'하여 '덮어쓰기'
+            playerAttackSpeed = calculateAttackSpeedByLevel(attackSpeedLevel); 
+            
+            attackSpeedUpgradeCost *= GameConstants.UPGRADE_COST_MULTIPLIER;
+        });
+    }
+
+    /**
+     * ★ 레벨에 따라 공격 속도를 계산하는 헬퍼 메서드 ★
+     * (레벨 1: 0.8, 레벨 30: 0.5)
+     */
+    private static double calculateAttackSpeedByLevel(int level) {
+        if (level <= 1) return ATTACK_SPEED_START;
+        if (level >= MAX_UPGRADE_LEVEL) return ATTACK_SPEED_END;
+
+        // (레벨 1~30 범위를 0.0~1.0 비율로 변환)
+        // (level - 1) / (30 - 1)
+        double progress = (double)(level - 1) / (double)(MAX_UPGRADE_LEVEL - 1); // (29)
+        
+        // 선형 보간: Start + (End - Start) * progress
+        // 0.8 + (0.5 - 0.8) * progress
+        // 0.8 + (-0.3) * progress
+        double speed = ATTACK_SPEED_START + (ATTACK_SPEED_END - ATTACK_SPEED_START) * progress;
+        
+        return speed;
+    }
 }

@@ -33,7 +33,7 @@
                         <Font name="Arial" size="24.0" />
                      </font>
                   </Label>
-                  <Button fx:id="hpUpgradeButton" mnemonicParsing="false" text="Upgrade Button">
+                  <Button fx:id="hpUpgradeButton" mnemonicParsing="false" onAction="#handleHpUpgrade" text="Upgrade Button">
                      <font>
                         <Font name="Arial" size="18.0" />
                      </font>
@@ -47,7 +47,7 @@
                         <Font name="Arial" size="24.0" />
                      </font>
                   </Label>
-                  <Button fx:id="damageUpgradeButton" mnemonicParsing="false" text="Upgrade Button">
+                  <Button fx:id="damageUpgradeButton" mnemonicParsing="false" onAction="#handleDamageUpgrade" text="Upgrade Button">
                      <font>
                         <Font name="Arial" size="18.0" />
                      </font>
@@ -61,7 +61,7 @@
                         <Font name="Arial" size="24.0" />
                      </font>
                   </Label>
-                  <Button fx:id="attackSpeedUpgradeButton" mnemonicParsing="false" text="Upgrade Button">
+                  <Button fx:id="attackSpeedUpgradeButton" mnemonicParsing="false" onAction="#handleAttackSpeedUpgrade" text="Upgrade Button">
                      <font>
                         <Font name="Arial" size="18.0" />
                      </font>
