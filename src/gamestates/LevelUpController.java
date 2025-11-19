@@ -44,7 +44,7 @@ public class LevelUpController {
         ));
         
         upgrades.add(new UpgradeOption(
-            "공격력 +5", 
+            "공격력 +15", 
             () -> playingState.getPlayer().applyDamageBuff(GameConstants.DAMAGE_BUFF_AMOUNT)
         ));
         	

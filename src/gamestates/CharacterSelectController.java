@@ -19,8 +19,18 @@ public class CharacterSelectController {
     }
 
     @FXML
-    void handleSelectTank(ActionEvent event) {
+    void handleSelectTank(ActionEvent event) { // 이름 변경: handleSelectTank1 -> handleSelectTank
         selectCharacterAndStart(CharacterType.TANK);
+    }
+    
+    @FXML
+    void handleSelectAB(ActionEvent event) { // 이름 변경: handleSelectTank2 -> handleSelectAB
+        selectCharacterAndStart(CharacterType.AB);
+    }
+    
+    @FXML
+    void handleSelectCD(ActionEvent event) { // 이름 변경: handleSelectTan3 -> handleSelectCD
+        selectCharacterAndStart(CharacterType.CD);
     }
     
     private void selectCharacterAndStart(CharacterType type) {
