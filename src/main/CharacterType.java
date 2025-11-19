@@ -5,7 +5,9 @@ package main;
  */
 public enum CharacterType {
     DEFAULT("기본 캐릭터", "DEFAULT"),
-    TANK("탱크 캐릭터", "TANK");
+    TANK("탱크 캐릭터", "TANK"),
+    AB("AB캐릭터","AB"),
+    CD("CD캐릭터","CD");
     
     private final String displayName;
     private final String id;

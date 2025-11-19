@@ -4,8 +4,8 @@ import javafx.scene.paint.Color;
 
 public class GameConstants {
     // 화면 크기
-    public static final int SCREEN_WIDTH = 1080;
-    public static final int SCREEN_HEIGHT = 1440;
+    public static final int SCREEN_WIDTH = 720;
+    public static final int SCREEN_HEIGHT = 720;
     
     // 플레이어 기본값
     public static final double PLAYER_WIDTH = 80.0;
@@ -17,6 +17,20 @@ public class GameConstants {
     public static final double TANK_HP_BONUS = 50.0;
     public static final double TANK_SPEED_MULTIPLIER = 0.8;
     public static final double TANK_ATTACK_SPEED_MULTIPLIER = 1.5;
+    
+    // 탱크 기본값
+    public static final double AB_WIDTH = 90.0;
+    public static final double AB_HEIGHT = 90.0;
+    public static final double AB_HP_BONUS = 50.0;
+    public static final double AB_SPEED_MULTIPLIER = 0.8;
+    public static final double AB_ATTACK_SPEED_MULTIPLIER = 1.5;
+    
+    // 탱크 기본값
+    public static final double CD_WIDTH = 90.0;
+    public static final double CD_HEIGHT = 90.0;
+    public static final double CD_HP_BONUS = 50.0;
+    public static final double CD_SPEED_MULTIPLIER = 0.8;
+    public static final double CD_ATTACK_SPEED_MULTIPLIER = 1.5;
     
     // 적 기본값
     public static final double ENEMY_WIDTH = 70.0;
