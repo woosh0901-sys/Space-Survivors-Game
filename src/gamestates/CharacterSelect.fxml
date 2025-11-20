@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="1080.0" prefWidth="720.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.CharacterSelectController">
+<AnchorPane prefHeight="720.0" prefWidth="720.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.CharacterSelectController">
    <children>
       <VBox alignment="CENTER" spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -16,8 +16,8 @@
                   <Font name="Arial Bold" size="80.0" />
                </font>
             </Text>
-            
-            <Button onAction="#handleSelectDefault" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="기본 캐릭터 (Player)">
+
+            <Button onAction="#handleSelectTank" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="우서현">
                <font>
                   <Font name="Arial Bold" size="32.0" />
                </font>
@@ -26,7 +26,7 @@
                </padding>
             </Button>
             
-            <Button onAction="#handleSelectTank" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="탱크 캐릭터 (Tank)">
+            <Button onAction="#handleSelectAB" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="이정환">
                <font>
                   <Font name="Arial Bold" size="32.0" />
                </font>
@@ -35,16 +35,7 @@
                </padding>
             </Button>
             
-            <Button onAction="#handleSelectAB" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="AB(AB)">
-               <font>
-                  <Font name="Arial Bold" size="32.0" />
-               </font>
-               <padding>
-                  <Insets bottom="15.0" left="30.0" right="30.0" top="15.0" />
-               </padding>
-            </Button>
-            
-            <Button onAction="#handleSelectCD" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="CD(CD)">
+            <Button onAction="#handleSelectCD" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="박종화">
                <font>
                   <Font name="Arial Bold" size="32.0" />
                </font>

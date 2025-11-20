@@ -11,7 +11,7 @@ public class Enemy extends Entity {
 
     private static final double DEFAULT_WIDTH = GameConstants.ENEMY_WIDTH;
     private static final double DEFAULT_HEIGHT = GameConstants.ENEMY_HEIGHT;
-    private static final String IMAGE_PATH = "/images/enemy.png";
+    private static final String IMAGE_PATH = "/images/money.jpeg";
     
     private static final double HEALTH_BAR_HEIGHT = GameConstants.HEALTH_BAR_HEIGHT;
     private static final double HEALTH_BAR_Y_OFFSET = GameConstants.HEALTH_BAR_Y_OFFSET;
