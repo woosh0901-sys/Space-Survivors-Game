@@ -20,7 +20,7 @@ public class CharacterFactory {
                 return new Player2(x, y);
             case DEFAULT:
             default:
-                return new Player(x, y);
+                return new Player3(x, y);
         }
     }
     

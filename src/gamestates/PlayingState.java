@@ -3,6 +3,7 @@ package gamestates;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import entities.Boss;
 import entities.Bullet;
 import entities.CharacterFactory;
@@ -12,10 +13,10 @@ import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image; // Image 클래스 import
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import main.GameConstants;
 import main.GameData;
 import main.GameMain;
@@ -27,7 +28,7 @@ public class PlayingState extends GameState {
     
     private List<Bullet> playerBullets;
     private List<Enemy> enemies;
-    private List<Boss> bosses; // ★ 보스 리스트
+    private List<Boss> bosses; 
     private List<Bullet> enemyBullets;
     
     private int level;
@@ -41,10 +42,13 @@ public class PlayingState extends GameState {
     private int difficultyTier = 0;
     private GameUIController uiController;
     
-    // ★ 보스 관련 변수
+    // 보스 관련 변수
     private double nextBossTime = GameConstants.BOSS_SPAWN_INTERVAL;
     private boolean finalBossSpawned = false;
     private boolean gameCleared = false;
+    
+    // 배경화면 이미지 변수
+    private Image backgroundImage;
     
     public PlayingState(GameStateManager gsm) {
         super(gsm);
@@ -77,7 +81,7 @@ public class PlayingState extends GameState {
         
         playerBullets = new ArrayList<>();
         enemies = new ArrayList<>();
-        bosses = new ArrayList<>(); // ★ 보스 리스트 초기화
+        bosses = new ArrayList<>();
         enemyBullets = new ArrayList<>();
         
         level = 1;
@@ -94,6 +98,15 @@ public class PlayingState extends GameState {
         gameCleared = false;
         
         resetGameStats();
+        
+        // ★ 배경화면 이미지 로드 (JPG로 변경됨)
+        try {
+            // 파일명이 background.jpg 인지 꼭 확인하세요! (확장자 주의)
+            backgroundImage = new Image(getClass().getResourceAsStream("/images/background.png"));
+        } catch (Exception e) {
+            System.err.println("배경 이미지를 로드할 수 없습니다. (src/images/background.jpg 확인 필요)");
+            // 이미지가 없어도 게임은 실행되도록 예외만 출력하고 넘어갑니다.
+        }
     }
     
     private void resetGameStats() {
@@ -118,14 +131,14 @@ public class PlayingState extends GameState {
     
     @Override
     public void update(double deltaTime) {
-        if (gameCleared) return; // 게임 클리어 후 업데이트 중단
+        if (gameCleared) return; 
         
         updateGameTime(deltaTime);
         updateEntities(deltaTime);
         handleCollisions();
         cleanupDestroyedEntities();
         checkGameState();
-        handleSpawning(deltaTime); // ★ 수정됨
+        handleSpawning(deltaTime);
         updateDifficulty(deltaTime);
         updateUI();
     }
@@ -139,7 +152,7 @@ public class PlayingState extends GameState {
         player.handleInputAndMove(GameMain.getActiveKeys(), deltaTime);
 
         updateEnemies(deltaTime);
-        updateBosses(deltaTime); // ★ 보스 업데이트
+        updateBosses(deltaTime);
 
         playerBullets.forEach(b -> b.update(deltaTime));
         enemyBullets.forEach(b -> b.update(deltaTime));
@@ -159,7 +172,6 @@ public class PlayingState extends GameState {
         enemyBullets.addAll(newEnemyBullets);
     }
     
-    // ★ 보스 업데이트
     private void updateBosses(double deltaTime) {
         List<Bullet> newBossBullets = new ArrayList<>();
         
@@ -178,11 +190,11 @@ public class PlayingState extends GameState {
         handlePlayerBulletCollisions();
         handleEnemyBulletCollisions();
         handlePlayerEnemyCollisions();
-        handlePlayerBossCollisions(); // ★ 보스 충돌
+        handlePlayerBossCollisions();
     }
     
     private void handlePlayerBulletCollisions() {
-        // 일반 적과의 충돌
+        // 일반 적 충돌
         for (Bullet bullet : playerBullets) {
             if (bullet.isDestroyed()) continue;
             
@@ -196,7 +208,7 @@ public class PlayingState extends GameState {
             }
         }
         
-        // ★ 보스와의 충돌
+        // 보스 충돌
         for (Bullet bullet : playerBullets) {
             if (bullet.isDestroyed()) continue;
             
@@ -220,7 +232,6 @@ public class PlayingState extends GameState {
         }
     }
     
-    // ★ 보스 피격 처리
     private void handleBossHit(Bullet bullet, Boss boss) {
         bullet.destroy();
         boss.takeDamage(player.damage);
@@ -228,7 +239,6 @@ public class PlayingState extends GameState {
         if (boss.isDestroyed()) {
             grantBossRewards(boss);
             
-            // 최종 보스를 잡으면 게임 클리어
             if (boss.isFinalBoss()) {
                 gameCleared = true;
                 gsm.setState(new GameClearState(gsm, elapsedTime));
@@ -241,15 +251,12 @@ public class PlayingState extends GameState {
         grantExperience();
     }
     
-    // ★ 보스 보상
     private void grantBossRewards(Boss boss) {
-        // 골드 대량 지급
         int bossGold = boss.isFinalBoss() ? 
             (int)(GameData.enemyBaseGold * 100 * player.getGoldMultiplier()) :
             (int)(GameData.enemyBaseGold * 50 * player.getGoldMultiplier());
         GameData.gold += bossGold;
         
-        // 경험치 대량 지급
         double bossXp = boss.isFinalBoss() ? 
              GameConstants.FINAL_BOSS_XP_REWARD : 
              GameConstants.BOSS_XP_REWARD;
@@ -302,13 +309,11 @@ public class PlayingState extends GameState {
         }
     }
     
-    // ★ 플레이어와 보스 충돌
     private void handlePlayerBossCollisions() {
         for (Boss boss : bosses) {
             if (boss.isDestroyed() || player.isDestroyed()) continue;
             if (player.collidesWith(boss)) {
-                player.takeDamage(GameData.enemyDamage * 2); // 보스는 더 강한 데미지
-                // 보스는 충돌해도 파괴되지 않음
+                player.takeDamage(GameData.enemyDamage * 2);
             }
         }
     }
@@ -316,7 +321,7 @@ public class PlayingState extends GameState {
     private void cleanupDestroyedEntities() {
         playerBullets.removeIf(b -> b.isOffScreen() || b.isDestroyed());
         enemies.removeIf(e -> e.isOffScreen() || e.isDestroyed());
-        bosses.removeIf(b -> b.isOffScreen() || b.isDestroyed()); // ★ 보스 정리
+        bosses.removeIf(b -> b.isOffScreen() || b.isDestroyed());
         enemyBullets.removeIf(b -> b.isOffScreen() || b.isDestroyed());
     }
     
@@ -338,14 +343,11 @@ public class PlayingState extends GameState {
         gsm.pushState(new LevelUpState(gsm, this));
     }
     
-    // ★ 스폰 로직 통합
     private void handleSpawning(double deltaTime) {
-        // 보스 스폰 체크
         if (elapsedTime >= nextBossTime && !finalBossSpawned) {
             spawnBoss();
         }
         
-        // 10분 이후에는 일반 적 스폰 중단
         if (elapsedTime < GameConstants.FINAL_BOSS_TIME) {
             handleEnemySpawning(deltaTime);
         }
@@ -360,17 +362,14 @@ public class PlayingState extends GameState {
         }
     }
     
-    // ★ 보스 스폰
     private void spawnBoss() {
         double x = GameMain.WIDTH / 2;
         
-        // 10분째에 최종 보스 스폰
         if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) {
             bosses.add(new Boss(x, true));
             finalBossSpawned = true;
             System.out.println("최종 보스 출현!");
         } else {
-            // 2분마다 중간 보스 스폰
             bosses.add(new Boss(x, false));
             nextBossTime += GameConstants.BOSS_SPAWN_INTERVAL;
             System.out.println("보스 출현!");
@@ -378,7 +377,6 @@ public class PlayingState extends GameState {
     }
     
     private void updateDifficulty(double deltaTime) {
-        // 10분 이후에는 난이도 증가 중단
         if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) return;
         
         if (elapsedTime > (difficultyTier + 1) * GameConstants.DIFFICULTY_TIER_DURATION) {
@@ -390,7 +388,6 @@ public class PlayingState extends GameState {
                 spawnInterval /= GameConstants.SPAWN_INTERVAL_DIVIDER;
             }
             
-            // --- 여기가 끊긴 부분 ---
             GameData.enemyBaseGold *= GameConstants.ENEMY_GOLD_MULTIPLIER;
             GameData.enemyDamage *= GameConstants.ENEMY_DAMAGE_MULTIPLIER;
             
@@ -407,13 +404,20 @@ public class PlayingState extends GameState {
 
     @Override
     public void render() {
-        gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, GameMain.WIDTH, GameMain.HEIGHT);
+        // ★ 1. 배경화면 그리기
+        if (backgroundImage != null) {
+            gc.drawImage(backgroundImage, 0, 0, GameMain.WIDTH, GameMain.HEIGHT);
+        } else {
+            // 이미지가 없거나 로드 실패 시 검은 배경
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, GameMain.WIDTH, GameMain.HEIGHT);
+        }
         
+        // ★ 2. 그 위에 엔티티 그리기
         player.render(gc);
         playerBullets.forEach(b -> b.render(gc));
         enemies.forEach(e -> e.render(gc));
-        bosses.forEach(b -> b.render(gc)); // ★ 보스 렌더링 추가
+        bosses.forEach(b -> b.render(gc));
         enemyBullets.forEach(b -> b.render(gc));
     }
     

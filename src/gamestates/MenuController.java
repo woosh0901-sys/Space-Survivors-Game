@@ -2,7 +2,7 @@ package gamestates;
 
 import main.GameData;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
+import javafx.fxml.FXML; // ★ FXML import 필수
 
 public class MenuController {
 
@@ -12,17 +12,16 @@ public class MenuController {
         this.gsm = gsm;
     }
 
-    // FXML 파일의 onAction="#handlePlayButton"과 연결됩니다.
+    // ★ 1. START GAME 버튼 (원래 이름: handlePlayButton)
     @FXML
     void handlePlayButton(ActionEvent event) {
         if (gsm != null) {
-            // ★ 수정된 부분 ★
-            // PlayingState로 바로 가지 않고, 캐릭터 선택 화면(State)을 띄웁니다.
+            // PlayingState로 바로 가지 않고 캐릭터 선택창으로 이동
             gsm.setState(new CharacterSelectState(gsm));
         }
     }
     
-    // FXML 파일의 onAction="#handleShopButton"과 연결됩니다.
+    // ★ 2. SHOP 버튼 (원래 이름: handleShopButton)
     @FXML
     void handleShopButton(ActionEvent event) {
         if (gsm != null) {
@@ -30,7 +29,7 @@ public class MenuController {
         }
     }
     
-    // FXML 파일의 onAction="#handleResetButton"과 연결됩니다.
+    // ★ 3. RESET DATA 버튼 (원래 이름: handleResetButton)
     @FXML
     void handleResetButton(ActionEvent event) {
         GameData.reset();
