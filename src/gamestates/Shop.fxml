@@ -8,76 +8,90 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="1280.0" prefWidth="1080.0" style="-fx-background-color: #333333;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.ShopController">
+<AnchorPane prefHeight="1440.0" prefWidth="1080.0" style="-fx-background-image: url('/images/shop_backgorund.png'); -fx-background-size: cover; -fx-background-position: center center;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.ShopController">
    <children>
-      <VBox alignment="CENTER" layoutY="91.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="91.0">
+      
+      <VBox alignment="TOP_CENTER" spacing="40.0" style="-fx-background-color: rgba(0, 0, 0, 0.7); -fx-border-color: #FF8C00; -fx-border-width: 3; -fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="100.0">
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+         </padding>
          <children>
-            <Label text="SHOP" textFill="GOLD">
-               <font>
-                  <Font name="Arial Bold" size="80.0" />
-               </font>
-            </Label>
-            <Label fx:id="goldLabel" text="Gold: 0" textFill="GOLD">
-               <font>
-                  <Font name="Arial" size="32.0" />
-               </font>
-            </Label>
-         </children>
-      </VBox>
-      <VBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="14.0" spacing="30.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="300.0">
-         <children>
-            <HBox alignment="CENTER_LEFT" spacing="20.0">
+            
+            <VBox alignment="CENTER" spacing="15.0">
                <children>
-                  <Label fx:id="hpLabel" minWidth="400.0" text="HP Label" textFill="WHITE">
+                  <Label text="SHOP" textFill="GOLD">
                      <font>
-                        <Font name="Arial" size="24.0" />
+                        <Font name="Arial Bold" size="72.0" />
+                     </font>
+                     <style>-fx-effect: dropshadow(one-pass-box, #FF8C00, 10, 0.5, 0, 0);</style>
+                  </Label>
+                  <Label fx:id="goldLabel" text="Gold: 0" textFill="GOLD">
+                     <font>
+                        <Font name="Arial Bold" size="36.0" />
                      </font>
                   </Label>
-                  <Button fx:id="hpUpgradeButton" mnemonicParsing="false" onAction="#handleHpUpgrade" text="Upgrade Button">
-                     <font>
-                        <Font name="Arial" size="18.0" />
-                     </font>
-                  </Button>
                </children>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="20.0">
+            </VBox>
+            
+            <VBox spacing="30.0">
                <children>
-                  <Label fx:id="damageLabel" minWidth="400.0" text="Damage Label" textFill="WHITE">
-                     <font>
-                        <Font name="Arial" size="24.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="damageUpgradeButton" mnemonicParsing="false" onAction="#handleDamageUpgrade" text="Upgrade Button">
-                     <font>
-                        <Font name="Arial" size="18.0" />
-                     </font>
-                  </Button>
+                  
+                  <HBox alignment="CENTER_LEFT" spacing="30.0" style="-fx-border-color: rgba(255, 140, 0, 0.5); -fx-border-width: 0 0 2 0; -fx-padding: 0 0 15 0;">
+                     <children>
+                        <Label fx:id="hpLabel" minWidth="500.0" text="HP: 100 (+50) - 100G" textFill="WHITE">
+                           <font>
+                              <Font name="Arial Bold" size="28.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="hpUpgradeButton" mnemonicParsing="false" onAction="#handleHpUpgrade" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10;" text="UPGRADE">
+                           <padding>
+                              <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                  </HBox>
+                  
+                  <HBox alignment="CENTER_LEFT" spacing="30.0" style="-fx-border-color: rgba(255, 140, 0, 0.5); -fx-border-width: 0 0 2 0; -fx-padding: 0 0 15 0;">
+                     <children>
+                        <Label fx:id="damageLabel" minWidth="500.0" text="Damage: 20 (+5) - 150G" textFill="WHITE">
+                           <font>
+                              <Font name="Arial Bold" size="28.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="damageUpgradeButton" mnemonicParsing="false" onAction="#handleDamageUpgrade" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10;" text="UPGRADE">
+                           <padding>
+                              <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                  </HBox>
+                  
+                  <HBox alignment="CENTER_LEFT" spacing="30.0" style="-fx-border-color: rgba(255, 140, 0, 0.5); -fx-border-width: 0 0 2 0; -fx-padding: 0 0 15 0;">
+                     <children>
+                        <Label fx:id="attackSpeedLabel" minWidth="500.0" text="Atk Speed: 1.0s (-0.1s) - 200G" textFill="WHITE">
+                           <font>
+                              <Font name="Arial Bold" size="28.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="attackSpeedUpgradeButton" mnemonicParsing="false" onAction="#handleAttackSpeedUpgrade" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10;" text="UPGRADE">
+                           <padding>
+                              <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                  </HBox>
+                  
                </children>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="20.0">
-               <children>
-                  <Label fx:id="attackSpeedLabel" minWidth="400.0" text="Attack Speed Label" textFill="WHITE">
-                     <font>
-                        <Font name="Arial" size="24.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="attackSpeedUpgradeButton" mnemonicParsing="false" onAction="#handleAttackSpeedUpgrade" text="Upgrade Button">
-                     <font>
-                        <Font name="Arial" size="18.0" />
-                     </font>
-                  </Button>
-               </children>
-            </HBox>
+            </VBox>
+            
+            <Button onAction="#handleBackButton" prefHeight="60.0" prefWidth="250.0" style="-fx-background-color: rgba(100, 100, 100, 0.8); -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10;" text="BACK TO MENU">
+               <VBox.margin>
+                  <Insets top="30.0" />
+               </VBox.margin>
+            </Button>
+            
          </children>
       </VBox>
       
-      <Button onAction="#handleBackButton" prefHeight="57.0" prefWidth="162.0" text="뒤로가기" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
-         <font>
-            <Font name="Arial Bold" size="24.0" />
-         </font>
-         <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-         </padding>
-      </Button>
    </children>
 </AnchorPane>
