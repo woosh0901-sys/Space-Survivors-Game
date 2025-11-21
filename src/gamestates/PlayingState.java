@@ -13,7 +13,7 @@ import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image; // Image 클래스 import
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -42,12 +42,10 @@ public class PlayingState extends GameState {
     private int difficultyTier = 0;
     private GameUIController uiController;
     
-    // 보스 관련 변수
     private double nextBossTime = GameConstants.BOSS_SPAWN_INTERVAL;
     private boolean finalBossSpawned = false;
     private boolean gameCleared = false;
     
-    // 배경화면 이미지 변수
     private Image backgroundImage;
     
     public PlayingState(GameStateManager gsm) {
@@ -99,13 +97,10 @@ public class PlayingState extends GameState {
         
         resetGameStats();
         
-        // ★ 배경화면 이미지 로드 (JPG로 변경됨)
         try {
-            // 파일명이 background.jpg 인지 꼭 확인하세요! (확장자 주의)
             backgroundImage = new Image(getClass().getResourceAsStream("/images/background.png"));
         } catch (Exception e) {
-            System.err.println("배경 이미지를 로드할 수 없습니다. (src/images/background.jpg 확인 필요)");
-            // 이미지가 없어도 게임은 실행되도록 예외만 출력하고 넘어갑니다.
+            System.err.println("배경 이미지를 로드할 수 없습니다.");
         }
     }
     
@@ -119,7 +114,6 @@ public class PlayingState extends GameState {
     
     public void shoot() {
         List<Bullet> newBullets = player.attack();
-        
         if (newBullets != null && !newBullets.isEmpty()) {
             playerBullets.addAll(newBullets);
         }
@@ -132,6 +126,11 @@ public class PlayingState extends GameState {
     @Override
     public void update(double deltaTime) {
         if (gameCleared) return; 
+        
+        // ★ 스킬 사용 (E키)
+        if (GameMain.getActiveKeys().contains(javafx.scene.input.KeyCode.E)) {
+            player.tryUseSkill();
+        }
         
         updateGameTime(deltaTime);
         updateEntities(deltaTime);
@@ -160,29 +159,21 @@ public class PlayingState extends GameState {
     
     private void updateEnemies(double deltaTime) {
         List<Bullet> newEnemyBullets = new ArrayList<>();
-        
         for (Enemy enemy : enemies) {
             enemy.update(deltaTime);
             Bullet bullet = enemy.updateAI(deltaTime);
-            if (bullet != null) {
-                newEnemyBullets.add(bullet);
-            }
+            if (bullet != null) newEnemyBullets.add(bullet);
         }
-        
         enemyBullets.addAll(newEnemyBullets);
     }
     
     private void updateBosses(double deltaTime) {
         List<Bullet> newBossBullets = new ArrayList<>();
-        
         for (Boss boss : bosses) {
             boss.update(deltaTime);
             List<Bullet> bullets = boss.updateAI(deltaTime);
-            if (bullets != null) {
-                newBossBullets.addAll(bullets);
-            }
+            if (bullets != null) newBossBullets.addAll(bullets);
         }
-        
         enemyBullets.addAll(newBossBullets);
     }
     
@@ -194,27 +185,20 @@ public class PlayingState extends GameState {
     }
     
     private void handlePlayerBulletCollisions() {
-        // 일반 적 충돌
         for (Bullet bullet : playerBullets) {
             if (bullet.isDestroyed()) continue;
-            
             for (Enemy enemy : enemies) {
                 if (enemy.isDestroyed()) continue;
-                
                 if (bullet.collidesWith(enemy)) {
                     handleEnemyHit(bullet, enemy);
                     break;
                 }
             }
         }
-        
-        // 보스 충돌
         for (Bullet bullet : playerBullets) {
             if (bullet.isDestroyed()) continue;
-            
             for (Boss boss : bosses) {
                 if (boss.isDestroyed()) continue;
-                
                 if (bullet.collidesWith(boss)) {
                     handleBossHit(bullet, boss);
                     break;
@@ -226,19 +210,14 @@ public class PlayingState extends GameState {
     private void handleEnemyHit(Bullet bullet, Enemy enemy) {
         bullet.destroy();
         enemy.takeDamage(player.damage);
-        
-        if (enemy.isDestroyed()) {
-            grantRewards();
-        }
+        if (enemy.isDestroyed()) grantRewards();
     }
     
     private void handleBossHit(Bullet bullet, Boss boss) {
         bullet.destroy();
         boss.takeDamage(player.damage);
-        
         if (boss.isDestroyed()) {
             grantBossRewards(boss);
-            
             if (boss.isFinalBoss()) {
                 gameCleared = true;
                 gsm.setState(new GameClearState(gsm, elapsedTime));
@@ -261,8 +240,7 @@ public class PlayingState extends GameState {
              GameConstants.FINAL_BOSS_XP_REWARD : 
              GameConstants.BOSS_XP_REWARD;
         currentXp += bossXp;
-        
-        System.out.println("보스 처치! 골드 +" + bossGold + ", XP +" + bossXp);
+        System.out.println("보스 처치!");
     }
     
     private void grantGold() {
@@ -277,20 +255,14 @@ public class PlayingState extends GameState {
     
     private double calculateXpGain() {
         double luckRoll = random.nextDouble();
-        
-        if (luckRoll < GameConstants.XP_TRIPLE_CHANCE) {
-            return GameData.enemyBaseXP * GameConstants.XP_TRIPLE_MULTIPLIER;
-        } else if (luckRoll < GameConstants.XP_DOUBLE_CHANCE) {
-            return GameData.enemyBaseXP * GameConstants.XP_DOUBLE_MULTIPLIER;
-        }
-        
+        if (luckRoll < GameConstants.XP_TRIPLE_CHANCE) return GameData.enemyBaseXP * GameConstants.XP_TRIPLE_MULTIPLIER;
+        else if (luckRoll < GameConstants.XP_DOUBLE_CHANCE) return GameData.enemyBaseXP * GameConstants.XP_DOUBLE_MULTIPLIER;
         return GameData.enemyBaseXP;
     }
     
     private void handleEnemyBulletCollisions() {
         for (Bullet bullet : enemyBullets) {
             if (bullet.isDestroyed() || player.isDestroyed()) continue;
-            
             if (player.collidesWith(bullet)) {
                 player.takeDamage(GameData.enemyDamage);
                 bullet.destroy();
@@ -301,7 +273,6 @@ public class PlayingState extends GameState {
     private void handlePlayerEnemyCollisions() {
         for (Enemy enemy : enemies) {
             if (enemy.isDestroyed() || player.isDestroyed()) continue;
-
             if (player.collidesWith(enemy)) {
                 player.takeDamage(GameData.enemyDamage);
                 enemy.destroy();
@@ -330,7 +301,6 @@ public class PlayingState extends GameState {
             gsm.setState(new GameOverState(gsm));
             return;
         }
-        
         if (currentXp >= requiredXp) {
             handleLevelUp();
         }
@@ -347,7 +317,6 @@ public class PlayingState extends GameState {
         if (elapsedTime >= nextBossTime && !finalBossSpawned) {
             spawnBoss();
         }
-        
         if (elapsedTime < GameConstants.FINAL_BOSS_TIME) {
             handleEnemySpawning(deltaTime);
         }
@@ -355,7 +324,6 @@ public class PlayingState extends GameState {
     
     private void handleEnemySpawning(double deltaTime) {
         spawnTimer += deltaTime;
-        
         if (spawnTimer >= spawnInterval) {
             spawnEnemy();
             spawnTimer = 0;
@@ -364,7 +332,6 @@ public class PlayingState extends GameState {
     
     private void spawnBoss() {
         double x = GameMain.WIDTH / 2;
-        
         if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) {
             bosses.add(new Boss(x, true));
             finalBossSpawned = true;
@@ -378,42 +345,32 @@ public class PlayingState extends GameState {
     
     private void updateDifficulty(double deltaTime) {
         if (elapsedTime >= GameConstants.FINAL_BOSS_TIME) return;
-        
         if (elapsedTime > (difficultyTier + 1) * GameConstants.DIFFICULTY_TIER_DURATION) {
             difficultyTier++;
-            
             GameData.enemyBaseHealth *= GameConstants.ENEMY_HEALTH_MULTIPLIER;
-            
-            if (spawnInterval > GameConstants.MIN_SPAWN_INTERVAL) {
-                spawnInterval /= GameConstants.SPAWN_INTERVAL_DIVIDER;
-            }
-            
+            if (spawnInterval > GameConstants.MIN_SPAWN_INTERVAL) spawnInterval /= GameConstants.SPAWN_INTERVAL_DIVIDER;
             GameData.enemyBaseGold *= GameConstants.ENEMY_GOLD_MULTIPLIER;
             GameData.enemyDamage *= GameConstants.ENEMY_DAMAGE_MULTIPLIER;
-            
-            if (GameData.enemySpeed <= GameConstants.ENEMY_MAX_SPEED) {
-                GameData.enemySpeed += GameConstants.ENEMY_SPEED_INCREMENT;
-            }
+            if (GameData.enemySpeed <= GameConstants.ENEMY_MAX_SPEED) GameData.enemySpeed += GameConstants.ENEMY_SPEED_INCREMENT;
         }
     }
     
     private void updateUI() {
+        // ★ skillProgress 추가됨
         uiController.update(level, currentXp, requiredXp, 
-                          player.currentHp, player.maxHp, elapsedTime);
+                          player.currentHp, player.maxHp, elapsedTime,
+                          player.getSkillProgress());
     }
 
     @Override
     public void render() {
-        // ★ 1. 배경화면 그리기
         if (backgroundImage != null) {
             gc.drawImage(backgroundImage, 0, 0, GameMain.WIDTH, GameMain.HEIGHT);
         } else {
-            // 이미지가 없거나 로드 실패 시 검은 배경
             gc.setFill(Color.BLACK);
             gc.fillRect(0, 0, GameMain.WIDTH, GameMain.HEIGHT);
         }
         
-        // ★ 2. 그 위에 엔티티 그리기
         player.render(gc);
         playerBullets.forEach(b -> b.render(gc));
         enemies.forEach(e -> e.render(gc));

@@ -14,9 +14,10 @@ public class GameUIController {
     @FXML private Label timeLabel;
     @FXML private Label goldLabel;
     @FXML private Label LVLabel;
+    @FXML private ProgressBar skillBar;
 
-    // PlayingState로부터 게임 데이터를 받아와 UI를 갱신하는 메소드
-    public void update(int level, double currentXp, double requiredXp, double currentHp, double maxHp, double elapsedTime) {
+    // update 메서드에 skillProgress 파라미터 추가
+    public void update(int level, double currentXp, double requiredXp, double currentHp, double maxHp, double elapsedTime, double skillProgress) {
         // 레벨 및 경험치
         if (requiredXp > 0) {
             xpBar.setProgress(currentXp / requiredXp);
@@ -27,6 +28,9 @@ public class GameUIController {
         if (maxHp > 0) {
             hpBar.setProgress(currentHp / maxHp);
         }
+        
+        // ★ 스킬바 업데이트
+        skillBar.setProgress(skillProgress);
 
         // 시간
         int minutes = (int) (elapsedTime / 60);

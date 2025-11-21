@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="1440.0" prefWidth="1080.0" style="-fx-background-image: url('/images/shop_backgorund.png'); -fx-background-size: cover; -fx-background-position: center center;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.ShopController">
+<AnchorPane prefHeight="720.0" prefWidth="720.0" style="-fx-background-image: url('/images/shop_backgorund.png'); -fx-background-size: cover; -fx-background-position: center center;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.ShopController">
    <children>
       
       <VBox alignment="TOP_CENTER" spacing="40.0" style="-fx-background-color: rgba(0, 0, 0, 0.7); -fx-border-color: #FF8C00; -fx-border-width: 3; -fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="100.0">
