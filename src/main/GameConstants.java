@@ -11,18 +11,18 @@ public class GameConstants {
     public static final double PLAYER_WIDTH = 80.0;
     public static final double PLAYER_HEIGHT = 80.0;
     
-    // 탱크 기본값
+    // 박종화 기본값
     public static final double TANK_WIDTH = 90.0;
     public static final double TANK_HEIGHT = 90.0;
     public static final double TANK_HP_BONUS = 50.0;
     public static final double TANK_SPEED_MULTIPLIER = 0.8;
     public static final double TANK_ATTACK_SPEED_MULTIPLIER = 1.5;
     
-    // 탱크 기본값
+    // 우서현 기본값
     public static final double AB_WIDTH = 80.0;
     public static final double AB_HEIGHT = 80.0;
     
-    // 탱크 기본값
+    // 이정환 기본값
     public static final double CD_WIDTH = 80.0;
     public static final double CD_HEIGHT = 80.0;
     public static final double CD_ATTACK_BONUS = 1.1;
