@@ -13,26 +13,25 @@ public class CharacterSelectController {
         this.gsm = gsm;
     }
 
+    // 1. 박종화 (체력) - 기존 DEFAULT 타입 사용
     @FXML
     void handleSelectDefault(ActionEvent event) {
         selectCharacterAndStart(CharacterType.DEFAULT);
     }
 
+    // 2. 우서현 (골드) - 새로 추가!
     @FXML
-    void handleSelectTank(ActionEvent event) { // 이름 변경: handleSelectTank1 -> handleSelectTank
-        selectCharacterAndStart(CharacterType.TANK);
+    void handleSelectWoo(ActionEvent event) {
+        selectCharacterAndStart(CharacterType.WOO);
     }
     
+    // 3. 이정환 (공격력) - 새로 추가!
     @FXML
-    void handleSelectAB(ActionEvent event) { // 이름 변경: handleSelectTank2 -> handleSelectAB
-        selectCharacterAndStart(CharacterType.AB);
+    void handleSelectLee(ActionEvent event) {
+        selectCharacterAndStart(CharacterType.LEE);
     }
     
-    @FXML
-    void handleSelectCD(ActionEvent event) { // 이름 변경: handleSelectTan3 -> handleSelectCD
-        selectCharacterAndStart(CharacterType.CD);
-    }
-    
+    // 공통 로직
     private void selectCharacterAndStart(CharacterType type) {
         GameData.selectedCharacter = type.getId();
         GameData.save();

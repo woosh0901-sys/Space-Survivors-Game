@@ -1,13 +1,9 @@
 package main;
 
-/**
- * 캐릭터 타입을 정의하는 Enum입니다.
- */
 public enum CharacterType {
-    DEFAULT("기본 캐릭터", "DEFAULT"),
-    TANK("탱크 캐릭터", "TANK"),
-    AB("AB캐릭터","AB"),
-    CD("CD캐릭터","CD");
+    DEFAULT("박종화", "DEFAULT"), // 기본 (Player.java)
+    WOO("우서현", "WOO"),         // 골드 (Player3.java)
+    LEE("이정환", "LEE");         // 공격 (Player4.java)
     
     private final String displayName;
     private final String id;
@@ -25,11 +21,6 @@ public enum CharacterType {
         return id;
     }
     
-    /**
-     * ID 문자열로부터 CharacterType을 찾습니다.
-     * @param id 캐릭터 ID
-     * @return 해당하는 CharacterType (없으면 DEFAULT)
-     */
     public static CharacterType fromId(String id) {
         for (CharacterType type : values()) {
             if (type.id.equals(id)) {

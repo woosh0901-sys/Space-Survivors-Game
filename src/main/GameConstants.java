@@ -4,8 +4,8 @@ import javafx.scene.paint.Color;
 
 public class GameConstants {
     // 화면 크기
-    public static final int SCREEN_WIDTH = 720;
-    public static final int SCREEN_HEIGHT = 720;
+    public static final int SCREEN_WIDTH = 1080;
+    public static final int SCREEN_HEIGHT = 1280;
     
     // 플레이어 기본값
     public static final double PLAYER_WIDTH = 80.0;
@@ -19,22 +19,17 @@ public class GameConstants {
     public static final double TANK_ATTACK_SPEED_MULTIPLIER = 1.5;
     
     // 탱크 기본값
-    public static final double AB_WIDTH = 90.0;
-    public static final double AB_HEIGHT = 90.0;
-    public static final double AB_HP_BONUS = 50.0;
-    public static final double AB_SPEED_MULTIPLIER = 0.8;
-    public static final double AB_ATTACK_SPEED_MULTIPLIER = 1.5;
+    public static final double AB_WIDTH = 80.0;
+    public static final double AB_HEIGHT = 80.0;
     
     // 탱크 기본값
-    public static final double CD_WIDTH = 90.0;
-    public static final double CD_HEIGHT = 90.0;
-    public static final double CD_HP_BONUS = 50.0;
-    public static final double CD_SPEED_MULTIPLIER = 0.8;
-    public static final double CD_ATTACK_SPEED_MULTIPLIER = 1.5;
+    public static final double CD_WIDTH = 80.0;
+    public static final double CD_HEIGHT = 80.0;
+    public static final double CD_ATTACK_BONUS = 1.1;
     
     // 적 기본값
-    public static final double ENEMY_WIDTH = 70.0;
-    public static final double ENEMY_HEIGHT = 70.0;
+    public static final double ENEMY_WIDTH = 100.0;
+    public static final double ENEMY_HEIGHT = 100.0;
     public static final double ENEMY_ATTACK_SPEED = 2.0;
     public static final double HEALTH_BAR_HEIGHT = 5.0;
     public static final double HEALTH_BAR_Y_OFFSET = -10.0;
@@ -55,8 +50,8 @@ public class GameConstants {
     public static final int DIFFICULTY_TIER_DURATION = 30;
     
     // ★ 보스 시스템
-    public static final double BOSS_SPAWN_INTERVAL = 120.0; // 2분마다
-    public static final double FINAL_BOSS_TIME = 600.0; // 10분
+    public static final double BOSS_SPAWN_INTERVAL = 5.0; // 2분마다
+    public static final double FINAL_BOSS_TIME = 15.0; // 10분
     public static final double BOSS_XP_REWARD = 500.0; // 보스 처치 시 경험치
     public static final double FINAL_BOSS_XP_REWARD = 2000.0; // 최종 보스 경험치
     
@@ -84,11 +79,8 @@ public class GameConstants {
     public static final int DAMAGE_BUFF_AMOUNT = 15;
     public static final double GOLD_BUFF_PERCENTAGE = 0.10;
     public static final double SPEED_BUFF_AMOUNT = 50.0;
+	public static final double AB_ADD_EXPREIENCE = 1.5;
     
-    // 샷건 설정
-    public static final double SHOTGUN_BULLET_SIZE_MULTIPLIER = 0.8;
-    public static final double SHOTGUN_BULLET_SPEED_MULTIPLIER = 0.9;
-    public static final double SHOTGUN_SPREAD_OFFSET = 20.0;
-    
+
     private GameConstants() {}
 }

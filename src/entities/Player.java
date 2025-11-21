@@ -5,16 +5,17 @@ import java.util.List;
 import javafx.scene.image.Image;
 import main.GameConstants;
 
-public class Player4 extends PlayableCharacter {
+public class Player extends PlayableCharacter {
 
-    private static final double WIDTH = GameConstants.PLAYER_WIDTH;
-    private static final double HEIGHT = GameConstants.PLAYER_HEIGHT;
-    private static final String IMAGE_PATH = "/images/lee.png"; // Lee 사진
+    private static final double DEFAULT_WIDTH = GameConstants.PLAYER_WIDTH;
+    private static final double DEFAULT_HEIGHT = GameConstants.PLAYER_HEIGHT;
+    private static final String IMAGE_PATH = "/images/park.png"; // Park 사진
 
-    public Player4(double startX, double startY) {
-        super(startX, startY, WIDTH, HEIGHT);
+    public Player(double startX, double startY) {
+        super(startX, startY, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         
-        this.damage += 20; // 공격력 보너스
+        this.maxHp += 50; // 체력 보너스
+        this.currentHp = this.maxHp;
         
         loadImage();
     }
@@ -23,7 +24,7 @@ public class Player4 extends PlayableCharacter {
         try {
             image = new Image(getClass().getResourceAsStream(IMAGE_PATH));
         } catch (Exception e) {
-            System.err.println("Player4 이미지 로딩 실패! " + IMAGE_PATH);
+            System.err.println("Player 이미지 로딩 실패! " + IMAGE_PATH);
         }
     }
 
@@ -33,13 +34,13 @@ public class Player4 extends PlayableCharacter {
             shootCooldown = this.attackSpeed;
 
             List<Bullet> bullets = new ArrayList<>();
-            // ★ 수정된 부분: 마지막에 'false'
+            // ★ 수정된 부분: 마지막에 'false' (플레이어 총알 = 파란 공 이미지)
             bullets.add(new Bullet(
                 this.x,
                 this.y,
                 Bullet.PLAYER_BULLET_SIZE,
                 Bullet.PLAYER_BULLET_SPEED,
-                false
+                false 
             ));
             return bullets;
         }

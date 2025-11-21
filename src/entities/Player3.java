@@ -7,17 +7,15 @@ import main.GameConstants;
 
 public class Player3 extends PlayableCharacter {
 
-    private static final double AB_WIDTH = GameConstants.AB_WIDTH;
-    private static final double AB_HEIGHT = GameConstants.AB_HEIGHT;
-	private static final String IMAGE_PATH = null;
+    private static final double WIDTH = GameConstants.PLAYER_WIDTH;
+    private static final double HEIGHT = GameConstants.PLAYER_HEIGHT;
+    private static final String IMAGE_PATH = "/images/woo.png"; // Woo 사진
 
     public Player3(double startX, double startY) {
-        super(startX, startY, AB_WIDTH, AB_HEIGHT);
-
-        this.maxHp += GameConstants.AB_HP_BONUS;
-        this.currentHp = this.maxHp;
-        this.speed *= GameConstants.AB_SPEED_MULTIPLIER;
-
+        super(startX, startY, WIDTH, HEIGHT);
+        
+        this.goldMultiplier += 0.5; // 골드 보너스
+        
         loadImage();
     }
     
@@ -25,44 +23,24 @@ public class Player3 extends PlayableCharacter {
         try {
             image = new Image(getClass().getResourceAsStream(IMAGE_PATH));
         } catch (Exception e) {
-            System.err.println("탱크 이미지 로딩 실패! " + IMAGE_PATH + " 파일을 확인하세요.");
+            System.err.println("Player3 이미지 로딩 실패! " + IMAGE_PATH);
         }
     }
 
     @Override
     public List<Bullet> attack() {
         if (shootCooldown <= 0) {
-            shootCooldown = this.attackSpeed * GameConstants.TANK_ATTACK_SPEED_MULTIPLIER;
+            shootCooldown = this.attackSpeed;
 
             List<Bullet> bullets = new ArrayList<>();
-
-            // 중앙 총알
+            // ★ 수정된 부분: 마지막에 'false'
             bullets.add(new Bullet(
                 this.x,
                 this.y,
                 Bullet.PLAYER_BULLET_SIZE,
                 Bullet.PLAYER_BULLET_SPEED,
-                Bullet.PLAYER_BULLET_COLOR
+                false
             ));
-
-            // 왼쪽 총알
-            bullets.add(new Bullet(
-                this.x - GameConstants.SHOTGUN_SPREAD_OFFSET,
-                this.y,
-                Bullet.PLAYER_BULLET_SIZE * GameConstants.SHOTGUN_BULLET_SIZE_MULTIPLIER,
-                Bullet.PLAYER_BULLET_SPEED * GameConstants.SHOTGUN_BULLET_SPEED_MULTIPLIER,
-                Bullet.PLAYER_BULLET_COLOR
-            ));
-
-            // 오른쪽 총알
-            bullets.add(new Bullet(
-                this.x + GameConstants.SHOTGUN_SPREAD_OFFSET,
-                this.y,
-                Bullet.PLAYER_BULLET_SIZE * GameConstants.SHOTGUN_BULLET_SIZE_MULTIPLIER,
-                Bullet.PLAYER_BULLET_SPEED * GameConstants.SHOTGUN_BULLET_SPEED_MULTIPLIER,
-                Bullet.PLAYER_BULLET_COLOR
-            ));
-
             return bullets;
         }
         return null;
