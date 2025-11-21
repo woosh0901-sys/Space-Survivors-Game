@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="1440.0" prefWidth="1080.0" style="-fx-background-image: url('/images/background.png'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-repeat: no-repeat;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.LevelUpController">
+<AnchorPane prefHeight="720.0" prefWidth="720.0" style="-fx-background-image: url('/images/background.png'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-repeat: no-repeat;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gamestates.LevelUpController">
    <children>
       
       <VBox alignment="CENTER" spacing="30.0" style="-fx-background-color: rgba(20, 20, 20, 0.9); -fx-border-color: #FF8C00; -fx-border-width: 3; -fx-background-radius: 25; -fx-border-radius: 25; -fx-effect: dropshadow(three-pass-box, #FF8C00, 30, 0.2, 0, 0);" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="200.0">
@@ -21,15 +21,6 @@
                   <Font name="Arial Bold" size="80.0" />
                </font>
                <style>-fx-effect: dropshadow(one-pass-box, #FF8C00, 15, 0.5, 0, 0);</style>
-            </Label>
-            
-            <Label text="Choose Your Upgrade" textFill="WHITE">
-               <font>
-                  <Font name="Arial" size="32.0" />
-               </font>
-               <VBox.margin>
-                  <Insets bottom="30.0" />
-               </VBox.margin>
             </Label>
             
             <VBox fx:id="optionsContainer" alignment="CENTER" spacing="25.0">

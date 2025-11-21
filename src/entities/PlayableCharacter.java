@@ -9,13 +9,8 @@ import javafx.scene.paint.Color;
 import main.GameData;
 import main.GameMain;
 
-/**
- * 모든 '조종 가능한' 캐릭터의 공통 부모 클래스입니다.
- * 이동, 버프 적용, 피격 등 공통 로직을 가집니다.
- */
 public abstract class PlayableCharacter extends Entity {
 
-    // --- 스탯 변수 ---
     protected Image image;
     protected double shootCooldown = 0;
     
@@ -25,15 +20,17 @@ public abstract class PlayableCharacter extends Entity {
     protected double attackSpeed;
     protected double speed;
     protected double goldMultiplier = 1.0;
-    protected double maxSpeed = 1050.0; // 최대 속도 제한
+    protected double maxSpeed = 1050.0; 
 
-    /**
-     * 조종 가능한 캐릭터의 생성자
-     */
+    // ★ 스킬 관련 변수
+    protected double maxSkillCooldown = 10.0; // 기본값 (자식이 덮어씀)
+    protected double currentSkillCooldown = 0; 
+    protected boolean isSkillActive = false;   
+    protected double skillActiveTimer = 0;     
+
     public PlayableCharacter(double startX, double startY, double width, double height) {
         super(startX, startY, width, height);
         
-        // GameData에서 '영구 업그레이드' 스탯을 가져옵니다.
         this.maxHp = GameData.playerMaxHp;
         this.currentHp = this.maxHp;
         this.damage = GameData.playerDamage;
@@ -41,15 +38,27 @@ public abstract class PlayableCharacter extends Entity {
         this.speed = GameData.playerMoveSpeed;
     }
 
-    // --- ★ 공격 메소드 (추상) ---
-    /**
-     * 캐릭터가 공격을 시도합니다. (쿨다운 확인 포함)
-     * @return 쿨타임이 되어 발사한 총알 목록 (없으면 null)
-     */
     public abstract List<Bullet> attack();
 
+    // ★ 스킬 사용 시도
+    public void tryUseSkill() {
+        if (currentSkillCooldown <= 0) {
+            activateSkill(); // 자식이 구현한 스킬 발동
+            currentSkillCooldown = maxSkillCooldown; // 쿨타임 리셋
+        }
+    }
+
+    // 자식 클래스에서 구현할 추상 메서드
+    protected abstract void activateSkill();
     
-    // --- 공통 로직 ---
+    // 버프 종료 (필요시 오버라이드)
+    protected void deactivateSkill() {}
+
+    // UI 표시용 (0.0 ~ 1.0)
+    public double getSkillProgress() {
+        if (currentSkillCooldown <= 0) return 1.0; 
+        return 1.0 - (currentSkillCooldown / maxSkillCooldown); 
+    }
 
     public void takeDamage(double damage) {
         this.currentHp -= damage;
@@ -59,11 +68,10 @@ public abstract class PlayableCharacter extends Entity {
         }
     }
 
-    // ★ HP 버프 수정된 버전
     public void applyHpBuff(double percentage) { 
         double hpIncrease = this.maxHp * percentage;
         this.maxHp += hpIncrease;
-        this.currentHp += hpIncrease; // 증가량만큼만 더함
+        this.currentHp += hpIncrease; 
     }
     public void applyDamageBuff(int amount) { this.damage += amount; }
     public void applyAttackSpeedBuff(double percentage) { this.attackSpeed *= (1 - percentage); }
@@ -82,16 +90,29 @@ public abstract class PlayableCharacter extends Entity {
         if (shootCooldown > 0) {
             shootCooldown -= deltaTime;
         }
+        
+        // ★ 스킬 쿨타임 감소
+        if (currentSkillCooldown > 0) {
+            currentSkillCooldown -= deltaTime;
+        }
+        
+        // ★ 버프 지속시간 감소 및 종료
+        if (isSkillActive) {
+            skillActiveTimer -= deltaTime;
+            if (skillActiveTimer <= 0) {
+                deactivateSkill(); 
+                isSkillActive = false;
+            }
+        }
     }
     
-    // ★ S키 버그 수정된 버전
     public void handleInputAndMove(Set<KeyCode> activeKeys, double deltaTime) {
         double moveX = 0;
         double moveY = 0;
         if (activeKeys.contains(KeyCode.LEFT) || activeKeys.contains(KeyCode.A)) moveX -= 1;
         if (activeKeys.contains(KeyCode.RIGHT) || activeKeys.contains(KeyCode.D)) moveX += 1;
         if (activeKeys.contains(KeyCode.UP) || activeKeys.contains(KeyCode.W)) moveY -= 1;
-        if (activeKeys.contains(KeyCode.DOWN) || activeKeys.contains(KeyCode.S)) moveY += 1; // 수정됨
+        if (activeKeys.contains(KeyCode.DOWN) || activeKeys.contains(KeyCode.S)) moveY += 1; 
 
         if (moveX != 0 && moveY != 0) {
             double magnitude = Math.sqrt(2); 
@@ -101,7 +122,6 @@ public abstract class PlayableCharacter extends Entity {
         x += moveX * speed * deltaTime;
         y += moveY * speed * deltaTime;
         
-        // 화면 밖으로 나가지 않도록 위치 보정
         if (x < width / 2) x = width / 2;
         if (x > GameMain.WIDTH - width / 2) x = GameMain.WIDTH - width / 2;
         if (y < height / 2) y = height / 2;
