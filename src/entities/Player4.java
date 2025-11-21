@@ -38,7 +38,7 @@ public class Player4 extends PlayableCharacter {
         
         if (!isSkillActive) {
             originalDamage = this.damage;
-            this.damage *= 2; // 데미지 2배 뻥튀기
+            this.damage *= 200; // 데미지 2배 뻥튀기
             
             this.isSkillActive = true;
             this.skillActiveTimer = 5.0; // ★ 50초간 지속
