@@ -4,8 +4,8 @@ import javafx.scene.paint.Color;
 
 public class GameConstants {
     // 화면 크기
-    public static final int SCREEN_WIDTH = 1080;
-    public static final int SCREEN_HEIGHT = 1280;
+    public static final int SCREEN_WIDTH = 720;
+    public static final int SCREEN_HEIGHT = 720;
     
     // 플레이어 기본값
     public static final double PLAYER_WIDTH = 80.0;
